@@ -1,0 +1,236 @@
+<div class="wow-looter-window player-window">
+  <!-- Cabecera de la Ventana -->
+  <header class="looter-header player-header">
+    <div class="header-main">
+      <h2><i class="fas fa-gem"></i> {{localize "WOW_LOOTER.Player.HeaderTitle"}}</h2>
+      {{#if isGM}}
+        <span class="badge-gm-view"><i class="fas fa-crown"></i> {{localize "WOW_LOOTER.Common.GMView"}}</span>
+      {{/if}}
+    </div>
+    <p class="subtitle">{{localize "WOW_LOOTER.Player.Subtitle"}}</p>
+
+    <!-- Fila "Looting as:" con selector interactivo -->
+    <div class="looting-as-banner">
+      <i class="fas fa-hand looting-as-icon"></i>
+      <span class="looting-as-label">{{localize "WOW_LOOTER.Manual.LootingAs"}}:</span>
+      <div class="looting-as-select-wrap">
+        {{#if looterOptions.length}}
+          <select class="looting-as-select" {{#unless (gt looterOptions.length 1)}}disabled{{/unless}}>
+            {{#each looterOptions}}
+              <option value="{{this.id}}" {{#if this.selected}}selected{{/if}}>{{this.name}}</option>
+            {{/each}}
+          </select>
+        {{else}}
+          <span class="looting-as-static">{{currentCharacter.characterName}}</span>
+        {{/if}}
+      </div>
+    </div>
+  </header>
+
+  <!-- Fila de Estado de Preparación del Grupo (Party Readiness) -->
+  <section class="players-readiness-row">
+    {{#each session.eligiblePlayers}}
+    <div class="readiness-pill {{#if this.isReady}}ready{{else}}waiting{{/if}}" title="{{this.characterName}}: {{#if this.isReady}}{{localize 'WOW_LOOTER.Player.Ready'}}{{else}}{{localize 'WOW_LOOTER.Player.Choosing'}}{{/if}}">
+      <span class="readiness-avatar-wrap">
+        <img src="{{this.characterImg}}" alt="{{this.characterName}}" class="readiness-avatar-img" style="transform: scale({{this.scaleX}}, {{this.scaleY}});" />
+      </span>
+      <span class="readiness-name">{{this.characterName}}</span>
+      <span class="readiness-icon">
+        {{#if this.isReady}}
+          <i class="fas fa-check-circle"></i>
+        {{else}}
+          <i class="fas fa-clock"></i>
+        {{/if}}
+      </span>
+    </div>
+    {{/each}}
+  </section>
+
+  <!-- Panel de Distribución de Monedas -->
+  {{#if hasCurrencies}}
+  <section class="looter-box currency-player-box">
+    <div class="box-header">
+      <h3><i class="fas fa-coins"></i> {{localize "WOW_LOOTER.Player.CurrencyDistribution"}}</h3>
+    </div>
+    <div class="currency-player-body">
+      <!-- Monedas disponibles en formato pastilla con recuadro -->
+      <div class="currency-pills-row">
+        {{#each currenciesList}}
+        <div class="currency-pill {{this.key}}">
+          <img src="{{this.img}}" alt="{{this.label}}" class="currency-coin-icon" />
+          <span class="coin-qty-label">{{this.value}}</span>
+          <span class="currency-denom-label">{{this.label}}</span>
+        </div>
+        {{/each}}
+      </div>
+
+      <!-- Opciones de reparto de monedas (Radio buttons) -->
+      <div class="player-currency-choices">
+        <label class="radio-label">
+          <input type="radio" class="styled-radio" name="currencyChoice" value="split" {{#if myCurrencyChoice.splitEvenly}}checked{{/if}}>
+          <span>{{localize "WOW_LOOTER.Player.SplitEvenly"}}</span>
+        </label>
+        <div class="custom-currency-entry">
+          <label class="radio-label">
+            <input type="radio" class="styled-radio" name="currencyChoice" value="custom" {{#unless myCurrencyChoice.splitEvenly}}checked{{/unless}} {{#unless canUseCustomCurrency}}disabled{{/unless}}>
+            <span>{{localize "WOW_LOOTER.Player.RequestAmount"}}:</span>
+          </label>
+          <input type="number" class="custom-money-input num-box" value="{{myCurrencyChoice.requested}}" min="0" max="{{myMaxRequestable}}" {{#if myCurrencyChoice.splitEvenly}}disabled{{/if}}/>
+          <select class="custom-denom-select" {{#if myCurrencyChoice.splitEvenly}}disabled{{/if}}>
+            {{#each currenciesList}}
+              <option value="{{this.key}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+            {{/each}}
+          </select>
+        </div>
+      </div>
+
+      {{#if currencyRequestsList.length}}
+      <div class="currency-requests-list">
+        {{#each currencyRequestsList}}
+          <span class="currency-request-pill">
+            <span class="claimant-avatar-circle-wrap">
+              <img src="{{this.characterImg}}" alt="{{this.characterName}}" class="claimant-avatar-img" style="transform: scale({{this.scaleX}}, {{this.scaleY}});" />
+            </span>
+            <span class="currency-request-name">{{this.characterName}}:</span>
+            <strong class="currency-request-amount">{{this.requested}} {{this.denomLabel}}</strong>
+          </span>
+        {{/each}}
+      </div>
+      {{/if}}
+    </div>
+  </section>
+  {{/if}}
+
+  <!-- Panel de Selección de Items (Loot Pool) -->
+  <section class="looter-box items-selection-box">
+    <div class="box-header">
+      <h3><i class="fas fa-boxes-stacked"></i> {{localize "WOW_LOOTER.Player.SelectYourItems"}}</h3>
+      <span class="loot-pool-hint"><i class="fas fa-info-circle"></i> {{localize "WOW_LOOTER.Player.ClickToSelect"}}</span>
+    </div>
+
+    <div class="player-loot-list-container">
+      {{#if groupedItems.length}}
+        {{#each groupedItems}}
+        <div class="player-loot-category-group">
+          <div class="category-header-row">
+            <span class="category-title">{{this.category}}</span>
+          </div>
+
+          <ul class="player-loot-list">
+            {{#each this.items}}
+            <li class="player-loot-card" data-item-id="{{this.id}}">
+              <div class="player-loot-card-main">
+                <div class="item-visual" data-action="toggle-item-desc">
+                  <img src="{{this.img}}" alt="{{this.name}}" class="item-icon" />
+                  <div class="item-name-group">
+                    <span class="item-name">{{this.name}}</span>
+                    {{#if (gt this.quantity 1)}}
+                      <span class="item-badge-qty">x{{this.quantity}}</span>
+                    {{/if}}
+                    <i class="fas fa-chevron-down toggle-desc-icon"></i>
+                  </div>
+                </div>
+
+                <div class="player-loot-right-controls">
+                  <!-- Estado de Reclamo -->
+                  <div class="item-claims-status">
+                    {{#if (eq this.claims.length 0)}}
+                      <span class="status-text unclaimed">{{localize "WOW_LOOTER.Player.Unclaimed"}}</span>
+                    {{else if this.isSingleClaim}}
+                      <span class="status-text single-claim">
+                        <i class="fas fa-user-check"></i> {{localize "WOW_LOOTER.Player.DesiredBy"}}: {{this.claims.0.characterName}}
+                      </span>
+                    {{else if this.isNotEnough}}
+                      <span class="status-text not-enough-claim">
+                        <i class="fas fa-exclamation-triangle"></i> {{localize "WOW_LOOTER.Player.NotEnough"}}
+                      </span>
+                    {{else if this.isContested}}
+                      <span class="status-text contested-claim">
+                        <i class="fas fa-khanda"></i> {{localize "WOW_LOOTER.Player.Contested"}} ({{this.claims.length}} {{localize "WOW_LOOTER.Player.Interested"}})
+                      </span>
+                    {{else}}
+                      <span class="status-text single-claim">
+                        <i class="fas fa-user-check"></i> {{localize "WOW_LOOTER.Player.DesiredBy"}} ({{this.claims.length}} {{localize "WOW_LOOTER.Player.Interested"}})
+                      </span>
+                    {{/if}}
+                  </div>
+
+                  <!-- Avatares de Reclamantes -->
+                  <div class="claimants-avatars-row">
+                    {{#each this.claims}}
+                      <div class="claimant-avatar-wrap">
+                        <span class="claimant-avatar-circle-wrap">
+                          <img src="{{this.characterImg}}" alt="{{this.characterName}}" title="{{this.characterName}}" class="claimant-avatar-img" style="transform: scale({{this.scaleX}}, {{this.scaleY}});" />
+                        </span>
+                        {{#if (gt ../quantity 1)}}
+                          <span class="claimant-qty-badge">x{{#if this.quantity}}{{this.quantity}}{{else}}1{{/if}}</span>
+                        {{/if}}
+                      </div>
+                    {{/each}}
+                  </div>
+
+                  <!-- Campo de Cantidad si quantity > 1 -->
+                  {{#if (gt this.quantity 1)}}
+                    <input type="number" class="player-claim-qty-input num-box" min="1" max="{{this.quantity}}" value="{{this.myClaimQty}}" title="{{localize 'WOW_LOOTER.Manual.QuantityToTake'}}" />
+                  {{/if}}
+
+                  <!-- Botón Split (Solo GM cuando quantity > 1) -->
+                  {{#if this.canSplit}}
+                    <button type="button" class="btn btn-split-item" data-action="split-item" data-item-id="{{this.id}}" title="{{localize 'WOW_LOOTER.GM.SplitTitle'}}">
+                      <i class="fas fa-code-branch"></i> {{localize "WOW_LOOTER.GM.SplitItem"}}
+                    </button>
+                  {{/if}}
+
+                  <!-- Botón Claim / Claimed -->
+                  <div class="selection-action-wrap">
+                    {{#if this.isClaimedByMe}}
+                      <button type="button" class="btn btn-claim-action btn-claimed-active" data-action="toggle-claim" data-item-id="{{this.id}}">
+                        {{localize "WOW_LOOTER.Player.Claimed"}}
+                      </button>
+                    {{else}}
+                      <button type="button" class="btn btn-claim-action btn-claim-dark" data-action="toggle-claim" data-item-id="{{this.id}}">
+                        {{localize "WOW_LOOTER.Player.Claim"}}
+                      </button>
+                    {{/if}}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Cajón de Descripción Desplegable -->
+              <div class="item-description-drawer" style="display: none;">
+                {{#if this.description}}
+                  <div class="item-desc-content">{{{this.description}}}</div>
+                {{else}}
+                  <p class="no-desc">{{localize "WOW_LOOTER.Common.NoDescription"}}</p>
+                {{/if}}
+              </div>
+            </li>
+            {{/each}}
+          </ul>
+        </div>
+        {{/each}}
+      {{else}}
+        <div class="empty-state">
+          <p>{{localize "WOW_LOOTER.Player.NoItemsInLoot"}}</p>
+        </div>
+      {{/if}}
+    </div>
+  </section>
+
+  <!-- Pie de Ventana: Acciones (Diferenciado para GM y Jugador) -->
+  <footer class="looter-footer player-footer">
+    {{#if isGM}}
+      <button type="button" class="btn btn-dark-action btn-force-resolve" data-action="gm-force-resolve">
+        <i class="fas fa-bolt"></i> {{localize "WOW_LOOTER.GM.ForceResolve"}}
+      </button>
+    {{else}}
+      <button type="button" class="btn btn-primary btn-done-choosing" data-action="toggle-my-ready" {{#if isReadyBlocked}}disabled title="{{localize 'WOW_LOOTER.Player.NotEnoughBlocked'}}"{{/if}}>
+        {{#if isMyPlayerReady}}
+          <i class="fas fa-check-double"></i> {{localize "WOW_LOOTER.Player.ReadyWaiting"}}
+        {{else}}
+          <i class="fas fa-check"></i> {{localize "WOW_LOOTER.Player.ImDone"}}
+        {{/if}}
+      </button>
+    {{/if}}
+  </footer>
+</div>

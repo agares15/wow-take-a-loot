@@ -1,0 +1,53 @@
+{
+  "id": "wow-take-a-loot",
+  "title": "Wow's Take a Loot (PF2e & D&D 5e)",
+  "description": "Un gestor de loot inspirado en World of Warcraft con distribución en tiempo real, disputas con d100, interfaz de GM y jugadores, loot manual en tokens y creación rápida de cofres en escena para PF2e y D&D 5e.",
+  "version": "1.0.0",
+  "compatibility": {
+    "minimum": "12",
+    "verified": "14"
+  },
+  "authors": [
+    {
+      "name": "WoW Looter Team"
+    }
+  ],
+  "relationships": {
+    "systems": [
+      {
+        "id": "dnd5e",
+        "type": "system",
+        "compatibility": {
+          "minimum": "3.0.0"
+        }
+      },
+      {
+        "id": "pf2e",
+        "type": "system",
+        "compatibility": {
+          "minimum": "5.0.0"
+        }
+      }
+    ]
+  },
+  "socket": true,
+  "esmodules": [
+    "scripts/module.js"
+  ],
+  "styles": [
+    "styles/wow-looter.css"
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "languages/en.json"
+    },
+    {
+      "lang": "es",
+      "name": "Español",
+      "path": "languages/es.json"
+    }
+  ]
+}
+

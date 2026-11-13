@@ -1,0 +1,225 @@
+<div class="wow-looter-window loot-settings-window">
+  <header class="looter-header settings-header">
+    <div class="header-main">
+      <h2><i class="fas fa-cog"></i> {{localize "WOW_LOOTER.Settings.LootSettingsTitle"}}</h2>
+    </div>
+  </header>
+
+  <!-- Selector de Tipo de Botín (Fila superior) -->
+  <div class="loot-type-row">
+    <span class="loot-type-label"><i class="fas fa-boxes-stacked"></i> {{localize "WOW_LOOTER.Settings.LootType"}}</span>
+    <select class="setting-input loot-type-select" name="lootType">
+      <option value="loot" {{#if (eq settings.lootType "loot")}}selected{{/if}}>{{localize "WOW_LOOTER.Settings.TypeLoot"}}</option>
+      <option value="container" {{#if (eq settings.lootType "container")}}selected{{/if}}>{{localize "WOW_LOOTER.Settings.TypeContainer"}}</option>
+      <option value="merchant" {{#if (eq settings.lootType "merchant")}}selected{{/if}}>{{localize "WOW_LOOTER.Settings.TypeMerchant"}}</option>
+    </select>
+  </div>
+
+  <div class="settings-form-scrollable">
+    <!-- Card 1: Configuración General -->
+    <div class="form-group-card settings-card">
+      <!-- Name -->
+      <div class="settings-field-row">
+        <label class="settings-field-label">{{localize "WOW_LOOTER.Settings.Name"}}</label>
+        <input type="text" class="setting-input" name="name" value="{{targetName}}" placeholder="Actor Name" />
+      </div>
+
+      <!-- Icon / Image -->
+      <div class="settings-field-row">
+        <label class="settings-field-label">{{localize "WOW_LOOTER.Settings.IconImage"}}</label>
+        <div class="filepicker-row">
+          <input type="text" class="setting-input" name="img" value="{{targetImg}}" placeholder="path/image.png" />
+          <button type="button" class="btn-picker" data-action="pick-file" data-target="img" data-type="image" title="{{localize 'WOW_LOOTER.Settings.IconImage'}}">
+            <i class="fas fa-file"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Delete when empty -->
+      <div class="settings-field-row split-row">
+        <div class="settings-label-group">
+          <label class="settings-field-label">{{localize "WOW_LOOTER.Settings.DeleteWhenEmpty"}}</label>
+          <span class="settings-hint">{{localize "WOW_LOOTER.Settings.DeleteWhenEmptyHint"}}</span>
+        </div>
+        <input type="checkbox" class="setting-checkbox" name="deleteWhenEmpty" {{#if settings.deleteWhenEmpty}}checked{{/if}} />
+      </div>
+
+      <!-- Require NPC to be dead to loot -->
+      <div class="settings-field-row split-row">
+        <div class="settings-label-group">
+          <label class="settings-field-label">{{localize "WOW_LOOTER.Settings.RequireDeathToLoot"}}</label>
+          <span class="settings-hint">{{localize "WOW_LOOTER.Settings.RequireDeathToLootInstanceHint"}}</span>
+        </div>
+        <input type="checkbox" class="setting-checkbox" name="requireDeathToLoot" {{#if settings.requireDeathToLoot}}checked{{/if}} />
+      </div>
+
+      <!-- Interaction distance (in grid units) -->
+      <div class="settings-field-row split-row">
+        <div class="settings-label-group">
+          <label class="settings-field-label">{{localize "WOW_LOOTER.Settings.InteractionDistance"}}</label>
+          <span class="settings-hint">{{localize "WOW_LOOTER.Settings.InteractionDistanceHint"}}</span>
+        </div>
+        <input type="number" class="setting-input num-input" name="interactionDistance" value="{{settings.interactionDistance}}" min="0" max="50" step="1" />
+      </div>
+
+      <!-- Loot description -->
+      <div class="settings-field-col">
+        <label class="settings-field-label">{{localize "WOW_LOOTER.Settings.LootDescription"}}</label>
+        <textarea class="setting-textarea" name="customDescription" rows="3" placeholder="{{localize 'WOW_LOOTER.Settings.LootDescriptionPlaceholder'}}">{{settings.customDescription}}</textarea>
+      </div>
+
+      <!-- Preservar macro de forma segura aunque no esté visible en el mockup -->
+      <input type="hidden" name="macroOnInteract" value="{{settings.macroOnInteract}}" />
+    </div>
+
+    <!-- Card 2: Opciones Extendidas de Contenedor -->
+    <div class="form-group-card settings-card container-options-card" style="{{#unless isContainerType}}display: none;{{/unless}}">
+      <div class="card-section-title"><i class="fas fa-treasure-chest"></i> {{localize "WOW_LOOTER.Settings.TypeContainer"}}</div>
+
+      <!-- Is Closed -->
+      <div class="settings-field-row split-row">
+        <label class="settings-field-label">{{localize "WOW_LOOTER.Settings.IsClosed"}}</label>
+        <input type="checkbox" class="setting-checkbox" name="isClosed" {{#if settings.isClosed}}checked{{/if}} />
+      </div>
+
+      <!-- Is Locked -->
+      <div class="settings-field-row split-row">
+        <label class="settings-field-label">{{localize "WOW_LOOTER.Settings.IsLocked"}}</label>
+        <input type="checkbox" class="setting-checkbox" name="isLocked" {{#if settings.isLocked}}checked{{/if}} />
+      </div>
+
+      <!-- Closed Image -->
+      <div class="settings-field-row">
+        <label class="settings-field-label">{{localize "WOW_LOOTER.Settings.ClosedImg"}}</label>
+        <div class="filepicker-row">
+          <input type="text" class="setting-input" name="closedImg" value="{{settings.closedImg}}" placeholder="path/image.png" />
+          <button type="button" class="btn-picker" data-action="pick-file" data-target="closedImg" data-type="image">
+            <i class="fas fa-file"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Opened Image -->
+      <div class="settings-field-row">
+        <label class="settings-field-label">{{localize "WOW_LOOTER.Settings.OpenedImg"}}</label>
+        <div class="filepicker-row">
+          <input type="text" class="setting-input" name="openedImg" value="{{settings.openedImg}}" placeholder="path/image.png" />
+          <button type="button" class="btn-picker" data-action="pick-file" data-target="openedImg" data-type="image">
+            <i class="fas fa-file"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Empty Image -->
+      <div class="settings-field-row">
+        <label class="settings-field-label">{{localize "WOW_LOOTER.Settings.EmptyImg"}}</label>
+        <div class="filepicker-row">
+          <input type="text" class="setting-input" name="emptyImg" value="{{settings.emptyImg}}" placeholder="path/image.png" />
+          <button type="button" class="btn-picker" data-action="pick-file" data-target="emptyImg" data-type="image">
+            <i class="fas fa-file"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Locked Image -->
+      <div class="settings-field-row">
+        <label class="settings-field-label">{{localize "WOW_LOOTER.Settings.LockedImg"}}</label>
+        <div class="filepicker-row">
+          <input type="text" class="setting-input" name="lockedImg" value="{{settings.lockedImg}}" placeholder="path/image.png" />
+          <button type="button" class="btn-picker" data-action="pick-file" data-target="lockedImg" data-type="image">
+            <i class="fas fa-file"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Opening Sound -->
+      <div class="settings-field-row">
+        <label class="settings-field-label">{{localize "WOW_LOOTER.Settings.OpeningSound"}}</label>
+        <div class="filepicker-row">
+          <input type="text" class="setting-input" name="openingSound" value="{{settings.openingSound}}" placeholder="sounds/doors/creak.mp3" />
+          <button type="button" class="btn-picker" data-action="pick-file" data-target="openingSound" data-type="audio">
+            <i class="fas fa-volume-high"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Closing Sound -->
+      <div class="settings-field-row">
+        <label class="settings-field-label">{{localize "WOW_LOOTER.Settings.ClosingSound"}}</label>
+        <div class="filepicker-row">
+          <input type="text" class="setting-input" name="closingSound" value="{{settings.closingSound}}" placeholder="sounds/doors/shut.mp3" />
+          <button type="button" class="btn-picker" data-action="pick-file" data-target="closingSound" data-type="audio">
+            <i class="fas fa-volume-high"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Locked Sound -->
+      <div class="settings-field-row">
+        <label class="settings-field-label">{{localize "WOW_LOOTER.Settings.LockedSound"}}</label>
+        <div class="filepicker-row">
+          <input type="text" class="setting-input" name="lockedSound" value="{{settings.lockedSound}}" placeholder="sounds/doors/lock.mp3" />
+          <button type="button" class="btn-picker" data-action="pick-file" data-target="lockedSound" data-type="audio">
+            <i class="fas fa-volume-high"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: Opciones de Comerciante (Merchant) -->
+    <div class="form-group-card settings-card merchant-options-card" style="{{#unless isMerchantType}}display: none;{{/unless}}">
+      <div class="card-section-title"><i class="fas fa-store"></i> {{localize "WOW_LOOTER.Settings.TypeMerchant"}}</div>
+
+      <!-- Buy Price Modifier (%) -->
+      <div class="settings-field-row split-row">
+        <div class="settings-label-group">
+          <label class="settings-field-label">{{localize "WOW_LOOTER.Merchant.BuyPriceModifier"}}</label>
+          <span class="settings-hint">{{localize "WOW_LOOTER.Merchant.BuyPriceModifierHint"}}</span>
+        </div>
+        <div class="unit-input-group">
+          <input type="number" class="setting-input num-input" name="buyPriceModifier" value="{{settings.buyPriceModifier}}" min="1" max="1000" step="5" />
+          <span class="unit-addon">%</span>
+        </div>
+      </div>
+
+      <!-- Sell Price Modifier (%) -->
+      <div class="settings-field-row split-row">
+        <div class="settings-label-group">
+          <label class="settings-field-label">{{localize "WOW_LOOTER.Merchant.SellPriceModifier"}}</label>
+          <span class="settings-hint">{{localize "WOW_LOOTER.Merchant.SellPriceModifierHint"}}</span>
+        </div>
+        <div class="unit-input-group">
+          <input type="number" class="setting-input num-input" name="sellPriceModifier" value="{{settings.sellPriceModifier}}" min="0" max="1000" step="5" />
+          <span class="unit-addon">%</span>
+        </div>
+      </div>
+
+      <!-- Infinite Funds -->
+      <div class="settings-field-row split-row">
+        <div class="settings-label-group">
+          <label class="settings-field-label">{{localize "WOW_LOOTER.Merchant.InfiniteFunds"}}</label>
+          <span class="settings-hint">{{localize "WOW_LOOTER.Merchant.InfiniteFundsHint"}}</span>
+        </div>
+        <input type="checkbox" class="setting-checkbox" name="infiniteFunds" {{#if settings.infiniteFunds}}checked{{/if}} />
+      </div>
+
+      <!-- Enable Item Identification -->
+      <div class="settings-field-row split-row">
+        <div class="settings-label-group">
+          <label class="settings-field-label">{{localize "WOW_LOOTER.Merchant.CanIdentify"}}</label>
+          <span class="settings-hint">{{localize "WOW_LOOTER.Merchant.CanIdentifyHint"}}</span>
+        </div>
+        <input type="checkbox" class="setting-checkbox" name="canIdentify" {{#if settings.canIdentify}}checked{{/if}} />
+      </div>
+    </div>
+  </div>
+
+  <footer class="looter-footer settings-footer">
+    <button type="button" class="btn btn-secondary btn-footer-cancel" data-action="close">
+      <i class="fas fa-times"></i> {{localize "WOW_LOOTER.Common.Cancel"}}
+    </button>
+    <button type="button" class="btn btn-primary btn-footer-save" data-action="save-settings">
+      <i class="fas fa-save"></i> {{localize "WOW_LOOTER.Settings.SaveChanges"}}
+    </button>
+  </footer>
+</div>

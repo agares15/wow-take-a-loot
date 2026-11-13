@@ -1,0 +1,3737 @@
+/* ========================================================
+   WoW Looter - Hoja de Estilos (Encapsulada al 100%)
+   No modifica hojas de actor ni elementos nativos de PF2e o D&D5e
+   ======================================================== */
+
+:root {
+  --wow-accent: #f7ce65;
+  --wow-accent-strong: #f59e0b;
+  --wow-accent-deep: #b8860b;
+  --wow-accent-deeper: #8b6508;
+  --wow-accent-border: #d4af37;
+  --wow-accent-soft-bg: rgba(247, 206, 101, 0.12);
+  --wow-accent-soft-border: rgba(212, 175, 55, 0.35);
+}
+
+body.system-dnd5e,
+body.wow-looter-system-dnd5e {
+  --wow-accent: #d94858;
+  --wow-accent-strong: #8f1d2c;
+  --wow-accent-deep: #8f1d2c;
+  --wow-accent-deeper: #68131f;
+  --wow-accent-border: #c93b4b;
+  --wow-accent-soft-bg: rgba(143, 29, 44, 0.22);
+  --wow-accent-soft-border: rgba(201, 59, 75, 0.45);
+}
+
+.wow-looter-app {
+  background: #11141c !important;
+  border: 1px solid #283245 !important;
+  color: #e0e0e0 !important;
+  font-family: var(--font-primary, "Signika", sans-serif);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.wow-looter-app button,
+.wow-looter-app button:focus,
+.wow-looter-app button:focus-visible,
+.wow-looter-app button:active,
+.wow-looter-chat-card button,
+.wow-looter-chat-card button:focus,
+.wow-looter-chat-card button:focus-visible,
+.wow-looter-chat-card button:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Cierre instantáneo: suprimir cualquier animación residual del header/ventana al cerrar */
+.wow-looter-app.minimizing,
+.wow-looter-app[class*="minimizing"],
+.wow-looter-app.closing,
+.wow-looter-app[class*="closing"] {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transition: none !important;
+  pointer-events: none !important;
+}
+
+.wow-looter-app.minimizing .window-header,
+.wow-looter-app[class*="minimizing"] .window-header,
+.wow-looter-app.closing .window-header,
+.wow-looter-app[class*="closing"] .window-header {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+.wow-looter-app .window-content {
+  background: transparent !important;
+  color: #e0e0e0 !important;
+  padding: 10px !important;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.wow-looter-gm-app .window-content {
+  overflow: hidden !important;
+}
+
+/* Eliminación de drop shadows y font-weight uniforme (500) en botones, pestañas y textos */
+.wow-looter-app button,
+.wow-looter-app .btn,
+.wow-looter-app .merchant-nav-tab,
+.wow-looter-manual-app button,
+.wow-looter-manual-app .btn,
+.wow-looter-settings-app button,
+.wow-looter-settings-app .btn,
+.merchant-window button,
+.merchant-window .btn,
+.merchant-window .merchant-nav-tab {
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+  font-weight: 500 !important;
+}
+
+.wow-looter-app h1,
+.wow-looter-app h2,
+.wow-looter-app h3,
+.wow-looter-app h4,
+.wow-looter-app h5,
+.wow-looter-app h6,
+.wow-looter-app p,
+.wow-looter-app span,
+.wow-looter-app label,
+.wow-looter-app a,
+.wow-looter-app strong,
+.wow-looter-manual-app h1,
+.wow-looter-manual-app h2,
+.wow-looter-manual-app h3,
+.wow-looter-manual-app h4,
+.wow-looter-manual-app p,
+.wow-looter-manual-app span,
+.wow-looter-manual-app label,
+.wow-looter-settings-app h1,
+.wow-looter-settings-app h2,
+.wow-looter-settings-app h3,
+.wow-looter-settings-app p,
+.wow-looter-settings-app span,
+.wow-looter-settings-app label,
+.merchant-window h1,
+.merchant-window h2,
+.merchant-window h3,
+.merchant-window h4,
+.merchant-window p,
+.merchant-window span,
+.merchant-window label {
+  text-shadow: none !important;
+}
+
+.wow-looter-app .wow-looter-window {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  gap: 10px;
+}
+
+/* ========================================================
+   WoW Looter - GM Panel & Loot Distribution Styles
+   ======================================================== */
+
+/* Header */
+.wow-looter-app .looter-header {
+  border-bottom: 1px solid #283345;
+  padding-bottom: 8px;
+  margin-bottom: 4px;
+  flex-shrink: 0;
+}
+
+.wow-looter-app .looter-header h2 {
+  margin: 0;
+  color: var(--wow-accent);
+  font-size: 1.35rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: none;
+}
+
+.wow-looter-app .looter-header .subtitle {
+  margin: 3px 0 0 0;
+  font-size: 0.82rem;
+  color: #8da2c4;
+}
+
+.wow-looter-app .looter-header .header-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.wow-looter-app .badge-gm-view {
+  background: #3a2a10;
+  border: 1px solid var(--wow-accent-deeper);
+  color: var(--wow-accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Grilla del GM (2 Columnas) */
+.wow-looter-app .looter-grid {
+  display: grid;
+  grid-template-columns: 310px 1fr;
+  grid-template-rows: minmax(0, 1fr);
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.wow-looter-app .looter-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Paneles / Boxes */
+.wow-looter-app .looter-box {
+  background: #171d28;
+  border: 1px solid #283345;
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 0;
+  overflow: hidden;
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.3);
+}
+
+.wow-looter-app .looter-box.drop-target {
+  transition: border-color 0.2s, background 0.2s;
+}
+
+
+.wow-looter-app .box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2px;
+  padding-bottom: 2px;
+}
+
+.wow-looter-app .box-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wow-looter-app .box-header h3 {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--wow-accent);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-bottom: none;
+}
+
+.wow-looter-app .hint {
+  font-size: 0.78rem;
+  color: #8da2c4;
+  margin: 0 0 6px 0;
+  font-style: italic;
+}
+
+.wow-looter-app .counter-badge {
+  background: #1e2636;
+  border: 1px solid #3c4a63;
+  color: #f1f5f9;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 1px 8px;
+  border-radius: 12px;
+  min-width: 18px;
+  text-align: center;
+}
+
+/* Checklists del GM (Enemigos y Jugadores) */
+.wow-looter-app .actor-checklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wow-looter-app .actor-item {
+  background: #131822;
+  border: 1px solid #252f40;
+  border-radius: 6px;
+  padding: 6px 10px;
+  transition: all 0.15s ease;
+}
+
+.wow-looter-app .actor-item:hover {
+  background: #1a2230;
+  border-color: #3b485d;
+}
+
+.wow-looter-app .checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  width: 100%;
+  margin: 0;
+}
+
+/* Checkbox cuadrado oscuro (idéntico al de Loot Settings) */
+.wow-looter-app .styled-checkbox {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--wow-accent-strong);
+  background-color: #10141d;
+  border: 1px solid #283245;
+  border-radius: 4px;
+  flex-shrink: 0;
+  box-shadow: none;
+  filter: none;
+}
+
+.wow-looter-app .avatar-circle-wrap {
+  width: 34px;
+  height: 34px;
+
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+}
+
+.wow-looter-app .avatar-circle-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.wow-looter-app .avatar-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid #e2e8f0;
+  object-fit: cover;
+  overflow: hidden;
+  display: block;
+  background: #0f131a;
+  flex-shrink: 0;
+}
+
+.wow-looter-app .actor-name {
+  font-weight: 700;
+  color: #f1f5f9;
+  font-size: 0.92rem;
+}
+
+.wow-looter-app .player-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.wow-looter-app .player-info .char-name {
+  font-weight: 700;
+  color: #f1f5f9;
+  font-size: 0.92rem;
+}
+
+.wow-looter-app .player-info .user-name {
+  font-size: 0.78rem;
+  color: #8da2c4;
+}
+
+/* Monedas (Total Loot Currency & Money Distribution) */
+.wow-looter-app .currency-pills-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin: 2px 0 4px 0;
+}
+
+.wow-looter-app .currency-pill,
+.wow-looter-manual-app .currency-pill {
+  display: inline-flex;
+  align-items: center;
+  background: #131822;
+  border: 1px solid #283345;
+  border-radius: 18px;
+  padding: 3px 10px 3px 6px;
+  gap: 5px;
+}
+
+.wow-looter-app .currency-pill.editable,
+.wow-looter-manual-app .currency-pill.editable,
+.wow-looter-app .currency-pill:has(input),
+.wow-looter-manual-app .currency-pill:has(input) {
+  padding: 2px 6px;
+  gap: 6px;
+}
+
+.wow-looter-app .currency-coin-icon,
+.wow-looter-manual-app .currency-pill .currency-coin-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.wow-looter-app input.num-box,
+.wow-looter-app input.coin-input {
+  background: #0d1117 !important;
+  border: 1px solid #222b3a !important;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  min-width: 30px;
+  text-align: center;
+}
+
+.wow-looter-app .coin-qty-label,
+.wow-looter-app span.coin-qty-box,
+.wow-looter-manual-app .coin-qty-label,
+.wow-looter-manual-app span.coin-qty-box {
+  background: transparent !important;
+  border: none !important;
+  color: #cbd5e1 !important;
+  /* Mismo plomo que el nombre de la moneda */
+  font-weight: 700;
+  font-size: 0.84rem;
+  padding: 0 !important;
+  min-width: unset !important;
+  line-height: 1;
+  display: inline-block;
+  margin-left: 1px;
+}
+
+.wow-looter-app .coin-input {
+  width: 44px;
+  height: 22px;
+}
+
+.wow-looter-app .currency-denom-label,
+.wow-looter-manual-app .currency-denom-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #cbd5e1;
+  text-transform: uppercase;
+  margin-left: 1px;
+}
+
+/* Botón Add Roll Table */
+.wow-looter-app .btn-add-table {
+  background: #232c3d !important;
+  border: 1px solid #3c4a63 !important;
+  color: #e2e8f0 !important;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 5px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.wow-looter-app .btn-add-table:hover {
+  background: #2f3b52 !important;
+  border-color: #55688a !important;
+}
+
+/* Lista de Items del GM (Loot Pool) */
+.wow-looter-app .loot-items-box {
+  flex: 1;
+  min-height: 0;
+}
+
+.wow-looter-app .loot-items-list-container {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding-right: 2px;
+}
+
+.wow-looter-app .loot-items-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.wow-looter-app .pool-item-card {
+  display: flex !important;
+  flex-direction: column !important;
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(40, 51, 69, 0.35) !important;
+  border-radius: 3px;
+  padding: 0 !important;
+  overflow: hidden;
+  transition: background 0.12s ease;
+}
+
+.wow-looter-app .pool-item-card:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+.wow-looter-app .pool-item-card:hover {
+  background: rgba(255, 255, 255, 0.065) !important;
+}
+
+.wow-looter-app .item-main-row {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px;
+  padding: 3px 6px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  min-height: 32px;
+}
+
+.wow-looter-app .item-img {
+  width: 26px;
+  height: 26px;
+  border-radius: 3px;
+  border: 1px solid #3b475c;
+  object-fit: cover;
+  background: #0b0e14;
+  flex-shrink: 0;
+}
+
+.wow-looter-app .item-details {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.wow-looter-app .item-name {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #f3f4f6;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wow-looter-app .toggle-desc-icon {
+  font-size: 0.72rem;
+  color: #8da2c4;
+  margin-left: 6px;
+  cursor: pointer;
+}
+
+.wow-looter-app .item-source {
+  font-size: 0.76rem;
+  color: #8da2c4;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.wow-looter-app .item-right-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.wow-looter-app .item-qty {
+  font-weight: 700;
+  color: #e2e8f0;
+  font-size: 0.85rem;
+}
+
+.wow-looter-app .btn-trash-item {
+  background: transparent !important;
+  border: none !important;
+  color: #8da2c4 !important;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  transition: all 0.15s ease;
+}
+
+.wow-looter-app .btn-trash-item:hover {
+  color: #fca5a5 !important;
+  background: rgba(127, 29, 29, 0.3) !important;
+}
+
+/* Fila "Looting as:" */
+.wow-looter-app .looting-as-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.wow-looter-app .looting-as-icon {
+  color: #8da2c4;
+  font-size: 1rem;
+}
+
+.wow-looter-app .looting-as-label {
+  color: #8da2c4;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.wow-looter-app .looting-as-select-wrap {
+  flex: 1;
+}
+
+.wow-looter-app .looting-as-select {
+  width: 100%;
+  background: #141a24;
+  border: 1px solid #2c384c;
+  border-radius: 4px;
+  color: #f3f4f6;
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.wow-looter-app .looting-as-select:focus {
+  border-color: var(--wow-accent);
+  outline: none;
+}
+
+.wow-looter-app .looting-as-static {
+  font-weight: 700;
+  color: #f3f4f6;
+  font-size: 0.92rem;
+}
+
+/* Fila de Preparación de Jugadores (Party Readiness Pills) */
+.wow-looter-app .players-readiness-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 0 0 2px 0;
+}
+
+.wow-looter-app .readiness-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 20px;
+  padding: 3px 10px 3px 4px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: #141a24;
+  border: 1px solid #2d3a4e;
+  transition: all 0.2s ease;
+}
+
+.wow-looter-app .readiness-avatar-wrap {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1.5px solid #e2e8f0;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: #0f131a;
+}
+
+.wow-looter-app .readiness-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.wow-looter-app .readiness-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1.5px solid #e2e8f0;
+  object-fit: cover;
+  background: #0f131a;
+}
+
+.wow-looter-app .readiness-pill.waiting {
+  border-color: #3d4a60;
+  color: var(--wow-accent);
+}
+
+.wow-looter-app .readiness-pill.waiting .readiness-icon {
+  color: var(--wow-accent-strong);
+  font-size: 0.85rem;
+}
+
+.wow-looter-app .readiness-pill.ready {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.12);
+  color: #4ade80;
+}
+
+.wow-looter-app .readiness-pill.ready .readiness-icon {
+  color: #10b981;
+  font-size: 0.85rem;
+}
+
+/* Reparto de Monedas de Jugadores */
+.wow-looter-app .currency-player-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wow-looter-app .player-currency-choices {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.wow-looter-app .radio-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #e2e8f0;
+  padding: 2px 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.wow-looter-app .styled-radio {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #5a6d8c;
+  border-radius: 50%;
+  background: #0f131a;
+  cursor: pointer;
+  display: grid;
+  place-content: center;
+  flex-shrink: 0;
+  margin: 0;
+  transition: all 0.15s ease;
+}
+
+.wow-looter-app .styled-radio:checked {
+  border-color: var(--wow-accent-strong);
+}
+
+.wow-looter-app .styled-radio:checked::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--wow-accent-strong);
+}
+
+.wow-looter-app .custom-currency-entry {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 4px;
+  gap: 8px;
+  white-space: nowrap;
+  flex-wrap: nowrap;
+}
+
+.wow-looter-app .currency-requests-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #263246;
+}
+
+.wow-looter-app .currency-request-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #141a24;
+  border: 1px solid #2d3a4e;
+  border-radius: 14px;
+  padding: 2px 10px 2px 4px;
+  font-size: 0.8rem;
+  color: #cbd5e1;
+}
+
+.wow-looter-app .currency-request-amount {
+  color: var(--wow-accent);
+}
+
+.wow-looter-app .claimant-avatar-circle-wrap {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid #e2e8f0;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: #0f131a;
+}
+
+.wow-looter-app .claimant-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.wow-looter-app .custom-money-input {
+  width: 50px;
+  height: 24px;
+}
+
+.wow-looter-app .custom-denom-select {
+  background: #141a24;
+  border: 1px solid #2c384c;
+  border-radius: 4px;
+  color: var(--wow-accent);
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 2px 6px;
+  height: 26px;
+  cursor: pointer;
+}
+
+/* Lista de Tarjetas de Loot en Distribución */
+.wow-looter-app .loot-pool-hint {
+  font-size: 0.78rem;
+  color: #8da2c4;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.wow-looter-app .items-selection-box {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.wow-looter-app .player-loot-list-container {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  padding-right: 2px;
+}
+
+.wow-looter-app .player-loot-category-group,
+.wow-looter-app .gm-loot-category-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wow-looter-app .player-loot-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.wow-looter-app .player-loot-card {
+  display: flex !important;
+  flex-direction: column !important;
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(40, 51, 69, 0.35) !important;
+  border-radius: 3px;
+  padding: 0 !important;
+  overflow: hidden;
+  transition: background 0.12s ease;
+  position: relative;
+}
+
+.wow-looter-app .player-loot-card:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+.wow-looter-app .player-loot-card:hover {
+  background: rgba(255, 255, 255, 0.065) !important;
+}
+
+.wow-looter-app .player-loot-card-main {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px;
+  padding: 3px 6px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  min-height: 32px;
+}
+
+.wow-looter-app .item-visual {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.wow-looter-app .item-name-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.wow-looter-app .item-badge-qty,
+.wow-looter-app .item-qty-badge {
+  color: #8da2c4;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.wow-looter-app .player-loot-right-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.wow-looter-app .item-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 3px;
+  border: 1px solid #3b475c;
+  object-fit: cover;
+  display: block;
+}
+
+.wow-looter-app .status-text.unclaimed {
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.wow-looter-app .status-text.single-claim {
+  color: #4ade80;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.wow-looter-app .status-text.contested-claim {
+  color: #f97316;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Fila de Avatares de Reclamantes */
+.wow-looter-app .claimants-avatars-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.wow-looter-app .claimant-avatar-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.wow-looter-app .claimant-avatar-circle {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid #e2e8f0;
+  object-fit: cover;
+  background: #0f131a;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.6);
+}
+
+.wow-looter-app .claimant-qty-badge {
+  color: #cbd5e1;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.wow-looter-app .player-claim-qty-input {
+  width: 32px !important;
+  height: 22px !important;
+  text-align: center !important;
+  padding: 0 !important;
+  font-size: 0.8rem !important;
+  font-weight: 700 !important;
+}
+
+/* Botón Claim / Claimed */
+.wow-looter-app .btn-claim-action {
+  min-width: 58px;
+  height: 24px;
+  padding: 2px 12px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wow-looter-app .btn-claim-dark {
+  background: #1e2636 !important;
+  border: 1px solid #3b485d !important;
+  color: #f1f5f9 !important;
+}
+
+.wow-looter-app .btn-claim-dark:hover {
+  background: #2a354b !important;
+  border-color: #55688a !important;
+}
+
+.wow-looter-app .btn-claimed-active {
+  background: #059669 !important;
+  border: 1px solid #10b981 !important;
+  color: #ffffff !important;
+}
+
+.wow-looter-app .btn-claimed-active:hover {
+  background: #10b981 !important;
+}
+
+/* Manual Loot Item row enhancements */
+.wow-looter-app .item-bulk-badge,
+.wow-looter-manual-app .item-bulk-badge {
+  width: 40px;
+  min-width: 40px;
+  max-width: 40px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: left;
+  gap: 4px;
+  color: #8da2c4;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.wow-looter-app .item-bulk-badge i,
+.wow-looter-manual-app .item-bulk-badge i {
+  font-size: 0.85rem;
+  width: 14px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.wow-looter-app .btn-item-loot {
+  background: #1e2636 !important;
+  border: 1px solid #3b485d !important;
+  color: #f1f5f9 !important;
+  padding: 4px 14px !important;
+  font-weight: 500 !important;
+  border-radius: 4px !important;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.wow-looter-app .btn-item-loot:hover {
+  background: #2a354b !important;
+  border-color: #55688a !important;
+}
+
+.wow-looter-app .loot-dropzone {
+  border: 1.5px dashed #3d4a63;
+  border-radius: 6px;
+  background: rgba(20, 26, 36, 0.6);
+  color: #8da2c4;
+  font-size: 0.82rem;
+  font-style: italic;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  transition: all 0.2s ease;
+}
+
+.wow-looter-app .loot-dropzone.drag-hover {
+  border-color: var(--wow-accent);
+  background: var(--wow-accent-soft-bg);
+  color: var(--wow-accent);
+}
+
+/* Footers */
+.wow-looter-app .looter-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid #283345;
+  padding-top: 10px;
+  margin-top: auto;
+  flex-shrink: 0;
+}
+
+.wow-looter-app .btn-done-choosing {
+  background: linear-gradient(180deg, var(--wow-accent-deep) 0%, var(--wow-accent-deeper) 100%) !important;
+  color: #ffffff !important;
+  border: 1.5px solid var(--wow-accent-border) !important;
+  border-radius: 6px;
+  padding: 8px 24px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.wow-looter-app .btn-done-choosing:hover {
+  background: linear-gradient(180deg, var(--wow-accent-border) 0%, var(--wow-accent-deep) 100%) !important;
+}
+
+.wow-looter-app .btn-dark-action {
+  background: #1e2636 !important;
+  border: 1px solid #3b485d !important;
+  color: #f3f4f6 !important;
+  border-radius: 5px;
+  padding: 8px 20px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.wow-looter-app .btn-dark-action:hover {
+  background: #2b364c !important;
+  border-color: #52637f !important;
+}
+
+.wow-looter-app .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 0.88rem;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  border: 1px solid transparent;
+}
+
+.wow-looter-app .btn-primary {
+  background: linear-gradient(180deg, var(--wow-accent-deep) 0%, var(--wow-accent-deeper) 100%) !important;
+  color: #fff !important;
+  border-color: var(--wow-accent-border) !important;
+}
+
+.wow-looter-app .btn-primary:hover {
+  background: linear-gradient(180deg, var(--wow-accent-border) 0%, var(--wow-accent-deep) 100%) !important;
+}
+
+.wow-looter-app .btn-secondary {
+  background: #252b36 !important;
+  color: #cbd5e1 !important;
+  border-color: #434c5e !important;
+}
+
+.wow-looter-app .btn-secondary:hover {
+  background: #333b4a !important;
+  color: #fff !important;
+}
+
+.wow-looter-app .btn-warning {
+  background: #b45309 !important;
+  color: #fef3c7 !important;
+  border-color: var(--wow-accent-strong) !important;
+}
+
+.wow-looter-app .btn-warning:hover {
+  background: #d97706 !important;
+}
+
+.wow-looter-app .btn-success {
+  background: #047857 !important;
+  color: #d1fae5 !important;
+  border-color: #10b981 !important;
+}
+
+.wow-looter-app .btn-sm {
+  padding: 4px 8px;
+  font-size: 0.78rem;
+}
+
+/* Token HUD Icon */
+.wow-looter-hud-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+}
+
+.wow-looter-hud-btn i {
+  margin: 0 !important;
+  line-height: 1 !important;
+  display: block;
+}
+
+.wow-looter-hud-btn.active {
+  color: var(--wow-accent) !important;
+}
+
+/* ========================================================
+   Chat Card Styling - Paleta Nativa del Chat de Foundry / PF2e / D&D5e
+   ======================================================== */
+.chat-message .wow-looter-chat-card,
+.wow-looter-chat-card {
+  background: var(--color-bg-subtle, rgba(0, 0, 0, 0.04));
+  border: 1px solid var(--color-border-subtle, currentColor);
+  border-radius: 4px;
+  padding: 8px 10px;
+  color: inherit;
+  font-size: var(--font-size-13, 0.82rem);
+  box-shadow: none;
+  margin: 2px 0;
+}
+
+.wow-looter-chat-card h3,
+.wow-looter-chat-card h4,
+.wow-looter-chat-card p,
+.wow-looter-chat-card li,
+.wow-looter-chat-card span,
+.wow-looter-chat-card strong,
+.wow-looter-chat-card em,
+.wow-looter-chat-card i {
+  color: inherit;
+}
+
+.wow-looter-chat-card .card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--color-border-subtle, rgba(128, 128, 128, 0.25));
+  padding-bottom: 6px;
+  margin-bottom: 6px;
+}
+
+.wow-looter-chat-card .title {
+  display: flex;
+  flex-direction: column;
+}
+
+.wow-looter-chat-card .title .item-title {
+  font-size: 0.95rem;
+  font-weight: bold;
+  color: inherit;
+}
+
+.wow-looter-chat-card .badge.dispute {
+  background: rgba(245, 158, 11, 0.15);
+  color: inherit;
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  border-radius: 3px;
+  font-size: 0.72rem;
+  padding: 1px 6px;
+  width: fit-content;
+  margin-top: 2px;
+}
+
+.wow-looter-chat-card .roll-list {
+  list-style: none;
+  margin: 4px 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.wow-looter-chat-card .roll-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 6px;
+  border-radius: 3px;
+  background: rgba(128, 128, 128, 0.08);
+  color: inherit;
+}
+
+.wow-looter-chat-card .roll-list li.winner {
+  background: rgba(16, 185, 129, 0.18);
+  border: 1px solid #10b981;
+  color: inherit;
+  font-weight: bold;
+}
+
+.wow-looter-chat-card .card-footer {
+  margin-top: 6px;
+  padding-top: 5px;
+  border-top: 1px solid var(--color-border-subtle, rgba(128, 128, 128, 0.2));
+  text-align: right;
+  font-size: 0.8rem;
+  color: inherit;
+  opacity: 0.85;
+}
+
+/* ========================================================
+   Manual Loot Window - Exact Layout & Visual Styling
+   ======================================================== */
+.wow-looter-manual-app {
+  min-width: 600px;
+  height: auto !important;
+  max-height: 85vh !important;
+  background: #11141c !important;
+  border: 1px solid #283245 !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8), inset 0 0 1px rgba(255, 255, 255, 0.1) !important;
+}
+
+.wow-looter-manual-app .window-content {
+  height: auto !important;
+  overflow-y: auto !important;
+  padding: 12px 14px !important;
+  background: transparent !important;
+}
+
+.wow-looter-manual-app .wow-looter-window {
+  height: auto !important;
+  min-height: 0 !important;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Header & Target Profile */
+.wow-looter-manual-app .looter-header {
+  border-bottom: none;
+  padding-bottom: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.wow-looter-manual-app .target-profile-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.wow-looter-manual-app .target-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.wow-looter-manual-app .target-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 2px solid var(--wow-accent-border);
+  object-fit: cover;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.wow-looter-manual-app .target-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wow-looter-manual-app .target-info h2 {
+  margin: 0;
+  color: var(--wow-accent);
+  font-size: 1.15rem;
+  font-weight: 700;
+  border-bottom: none;
+  line-height: 1.2;
+}
+
+.wow-looter-manual-app .lootable-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #18202e;
+  border: 1px solid #2d3a4f;
+  color: #94a3b8;
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 12px;
+  width: fit-content;
+}
+
+.wow-looter-manual-app .lootable-badge i {
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+/* Gear Settings Button in Top Header */
+.wow-looter-manual-app .header-action-buttons {
+  display: flex;
+  align-items: center;
+}
+
+.wow-looter-manual-app .header-gear-btn {
+  background: transparent !important;
+  border: none !important;
+  color: #94a3b8 !important;
+  font-size: 1.15rem !important;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+.wow-looter-manual-app .header-gear-btn:hover {
+  color: var(--wow-accent) !important;
+}
+
+/* Recipient Row ("Looting as:") */
+.wow-looter-manual-app .recipient-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  margin-bottom: 0px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--wow-accent-soft-border);
+  font-size: 0.85rem;
+}
+
+.wow-looter-manual-app .recipient-label {
+  color: #94a3b8;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.wow-looter-manual-app .recipient-name {
+  color: #f8fafc;
+  font-weight: 600;
+}
+
+.wow-looter-manual-app .looter-select,
+.wow-looter-player-app .looter-select {
+  flex: 1;
+  height: 32px !important;
+  background-color: #10141d !important;
+  color: #f8fafc !important;
+  border: 1px solid #2d384d !important;
+  border-radius: 4px !important;
+  padding: 4px 8px !important;
+  font-size: 0.85rem !important;
+  pointer-events: auto !important;
+  user-select: auto !important;
+  cursor: pointer !important;
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+/* Descripción personalizada en botín manual */
+.wow-looter-manual-app .custom-loot-description {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: rgba(18, 22, 32, 0.7);
+  border: 1px solid #384252;
+  border-left: 3px solid var(--wow-accent-border);
+  border-radius: 4px;
+  padding: 6px 10px;
+  margin-top: 6px;
+  font-size: 0.8rem;
+  color: #cbd5e1;
+}
+
+.wow-looter-manual-app .custom-loot-description i {
+  color: var(--wow-accent-border);
+  margin-top: 2px;
+}
+
+.wow-looter-manual-app .custom-desc-text {
+  flex: 1;
+  line-height: 1.35;
+}
+
+/* Boxes / Cards Container */
+.wow-looter-manual-app .looter-box {
+  background: #151a24;
+  border: 1px solid #242d3d;
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+
+.wow-looter-manual-app .box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.wow-looter-manual-app .box-header h3 {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--wow-accent);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: none;
+}
+
+.wow-looter-manual-app .items-count-badge {
+  background: #1e2634;
+  border: 1px solid #2d384c;
+  color: #94a3b8;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+/* Money Card Internals */
+.wow-looter-manual-app .manual-currency-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wow-looter-manual-app .currency-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.wow-looter-manual-app .currency-pill {
+  font-size: 0.82rem;
+}
+
+.wow-looter-manual-app .currency-pill .currency-coin-icon,
+.wow-looter-app .currency-coin-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.wow-looter-app .coin-tag .currency-coin-icon {
+  width: 15px;
+  height: 15px;
+  margin-right: 4px;
+}
+
+.wow-looter-manual-app .coin-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.wow-looter-manual-app .coin-dot.cp {
+  background-color: #c86432;
+
+}
+
+.wow-looter-manual-app .coin-dot.sp {
+  background-color: #cbd5e1;
+
+}
+
+.wow-looter-manual-app .coin-dot.gp {
+  background-color: #facc15;
+
+}
+
+.wow-looter-manual-app .coin-dot.pp {
+  background-color: #38bdf8;
+
+}
+
+.wow-looter-manual-app .take-currency-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wow-looter-manual-app .manual-money-input {
+  width: 60px !important;
+  height: 32px !important;
+  background: #10141d !important;
+  border: 1px solid #2d384d !important;
+  color: #f8fafc !important;
+  border-radius: 4px !important;
+  text-align: center !important;
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+  padding: 0 4px !important;
+}
+
+.wow-looter-manual-app .manual-currency-select {
+  flex: 1;
+  height: 32px !important;
+  background-color: #10141d !important;
+  border: 1px solid #2d384d !important;
+  color: #f8fafc !important;
+  border-radius: 4px !important;
+  padding: 2px 8px !important;
+  font-size: 0.85rem !important;
+  cursor: pointer !important;
+}
+
+.wow-looter-manual-app .btn-take-amount {
+  height: 32px;
+  padding: 0 14px;
+  background: #242c3d;
+  border: 1px solid #364259;
+  color: #e2e8f0;
+  border-radius: 4px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.wow-looter-manual-app .btn-take-amount:hover {
+  background: #2f3a50;
+  border-color: #485875;
+  color: #fff;
+}
+
+.wow-looter-manual-app .currency-actions-dual {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.wow-looter-manual-app .btn-take-all {
+  padding: 0 14px;
+  height: 32px;
+  background: #242c3d;
+  border: 1px solid #364259;
+  color: #e2e8f0;
+  border-radius: 4px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.wow-looter-manual-app .btn-take-all:hover {
+  background: #2f3a50;
+  border-color: #485875;
+  color: #fff;
+}
+
+.wow-looter-manual-app .btn-split-party {
+  padding: 0 14px;
+  height: 32px;
+  background: linear-gradient(180deg, #d39e24 0%, #b88619 100%);
+  border: 1px solid #e5b035;
+  color: #ffffff;
+  border-radius: 4px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+
+.wow-looter-manual-app .btn-split-party:hover {
+  filter: brightness(1.1);
+}
+
+/* Items List & Rows */
+.wow-looter-manual-app .manual-loot-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 280px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.wow-looter-manual-app .manual-item-row {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(40, 51, 69, 0.35);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 0;
+  transition: background 0.12s ease;
+}
+
+.wow-looter-manual-app .manual-item-row:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.wow-looter-manual-app .manual-item-row:hover {
+  background: rgba(255, 255, 255, 0.065);
+}
+
+.wow-looter-manual-app .manual-item-main {
+  display: flex;
+  align-items: center;
+  padding: 3px 6px;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 32px;
+}
+
+.wow-looter-manual-app .manual-item-main .item-img {
+  width: 26px;
+  height: 26px;
+  border-radius: 3px;
+  border: 1px solid #364259;
+  object-fit: cover;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.wow-looter-manual-app .manual-item-main .item-details {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.wow-looter-manual-app .name-desc-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.wow-looter-manual-app .name-desc-toggle .item-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #f3f4f6;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wow-looter-manual-app .name-desc-toggle .toggle-desc-icon {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  transition: transform 0.2s ease;
+}
+
+.wow-looter-manual-app .item-qty-sub {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  margin-top: 2px;
+  font-weight: 500;
+}
+
+.wow-looter-manual-app .item-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.wow-looter-manual-app .item-take-qty-input {
+  width: 36px !important;
+  height: 28px !important;
+  background: #10141d !important;
+  border: 1px solid #2d384d !important;
+  color: #f8fafc !important;
+  border-radius: 4px !important;
+  text-align: center !important;
+  font-size: 0.85rem !important;
+  font-weight: bold !important;
+  padding: 0 !important;
+}
+
+.wow-looter-manual-app .btn-item-loot {
+  height: 28px;
+  padding: 0 14px;
+  min-width: 54px;
+  background: #242c3d;
+  border: 1px solid #364259;
+  color: #e2e8f0;
+  border-radius: 4px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.wow-looter-manual-app .btn-item-loot:hover {
+  background: #2f3a50;
+  border-color: #485875;
+  color: #fff;
+}
+
+/* Footer Dual Actions */
+.wow-looter-manual-app .looter-footer {
+  border-top: none !important;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 0px;
+  padding-top: 8px;
+}
+
+.wow-looter-manual-app .btn-footer-close {
+  height: 36px;
+  padding: 0 16px;
+  background: #242c3d;
+  border: 1px solid #364259;
+  color: #e2e8f0;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.wow-looter-manual-app .btn-footer-close:hover {
+  background: #2f3a50;
+  border-color: #485875;
+  color: #fff;
+}
+
+.wow-looter-manual-app .btn-footer-loot-all {
+  height: 36px;
+  padding: 0 18px;
+  background: linear-gradient(180deg, #d39e24 0%, #b88619 100%);
+  border: 1px solid #e5b035;
+  color: #ffffff;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+
+.wow-looter-manual-app .btn-footer-loot-all:hover {
+  filter: brightness(1.1);
+}
+
+/* ========================================================
+   Loot Settings Window 
+   ======================================================== */
+.wow-looter-settings-app {
+  width: 490px !important;
+  height: auto !important;
+  max-height: 88vh !important;
+  background: #11141c !important;
+  border: 1px solid #283245 !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8), inset 0 0 1px rgba(255, 255, 255, 0.1) !important;
+}
+
+.wow-looter-settings-app .window-content {
+  height: auto !important;
+  overflow-y: auto !important;
+  padding: 12px 14px !important;
+  background: transparent !important;
+}
+
+.wow-looter-settings-app .loot-settings-window {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Header */
+.wow-looter-settings-app .settings-header {
+  border-bottom: 1px solid var(--wow-accent-soft-border);
+  padding-bottom: 8px;
+  margin-bottom: 2px;
+}
+
+.wow-looter-settings-app .settings-header h2 {
+  margin: 0;
+  color: var(--wow-accent);
+  font-size: 1.15rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: none;
+}
+
+/* Loot Type Top Row */
+.wow-looter-settings-app .loot-type-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 2px;
+}
+
+.wow-looter-settings-app .loot-type-label {
+  color: #94a3b8;
+  font-size: 0.88rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.wow-looter-settings-app .loot-type-select {
+  flex: 1;
+  height: 34px !important;
+  background-color: #10141d !important;
+  color: #f8fafc !important;
+  border: 1px solid #283245 !important;
+  border-radius: 4px !important;
+  padding: 4px 10px !important;
+  font-size: 0.88rem !important;
+  cursor: pointer !important;
+}
+
+/* Scrollable Cards Container */
+.wow-looter-settings-app .settings-form-scrollable {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 65vh;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+/* Cards */
+.wow-looter-settings-app .settings-card {
+  background: #151a24;
+  border: 1px solid #283245;
+  border-radius: 6px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.wow-looter-settings-app .card-section-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--wow-accent);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+/* Field Rows */
+.wow-looter-settings-app .settings-field-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 32px;
+}
+
+.wow-looter-settings-app .settings-field-label {
+  color: #94a3b8;
+  font-size: 0.88rem;
+  font-weight: 500;
+  min-width: 130px;
+  flex-shrink: 0;
+  margin: 0;
+}
+
+.wow-looter-settings-app .setting-input {
+  flex: 1;
+  height: 32px !important;
+  background: #10141d !important;
+  color: #f8fafc !important;
+  border: 1px solid #283245 !important;
+  border-radius: 4px !important;
+  padding: 0 10px !important;
+  font-size: 0.88rem !important;
+  box-sizing: border-box;
+}
+
+.wow-looter-settings-app .setting-input:focus {
+  border-color: var(--wow-accent) !important;
+  outline: none;
+}
+
+.wow-looter-settings-app .setting-input.num-input {
+  width: 54px !important;
+  flex: none !important;
+  text-align: center !important;
+  font-weight: bold !important;
+  font-size: 0.9rem !important;
+}
+
+/* Filepicker Row & Button */
+.wow-looter-settings-app .filepicker-row {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+  align-items: center;
+}
+
+.wow-looter-settings-app .btn-picker {
+  width: 34px;
+  height: 32px;
+  background: #242c3d;
+  border: 1px solid #364259;
+  color: #cbd5e1;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.wow-looter-settings-app .btn-picker:hover {
+  background: #2f3a50;
+  color: #ffffff;
+  border-color: #485875;
+}
+
+.wow-looter-settings-app .btn-picker i {
+  font-size: 0.88rem;
+}
+
+/* Split Rows (Label + Hint on left, Control on right) */
+.wow-looter-settings-app .settings-field-row.split-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.wow-looter-settings-app .settings-label-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wow-looter-settings-app .settings-label-group .settings-field-label {
+  font-weight: 600;
+}
+
+.wow-looter-settings-app .settings-hint {
+  color: #64748b;
+  font-size: 0.75rem;
+  line-height: 1.25;
+}
+
+/* Square Dark Checkbox */
+.wow-looter-settings-app .setting-checkbox {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--wow-accent-strong);
+  background-color: #10141d;
+  border: 1px solid #283245;
+  border-radius: 4px;
+  flex-shrink: 0;
+  box-shadow: none;
+  filter: none;
+}
+
+/* Field Column (Description) */
+.wow-looter-settings-app .settings-field-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.wow-looter-settings-app .settings-field-col .settings-field-label {
+  font-weight: 600;
+}
+
+.wow-looter-settings-app .setting-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  background: #10141d !important;
+  color: #f8fafc !important;
+  border: 1px solid #283245 !important;
+  border-radius: 4px !important;
+  padding: 8px 10px !important;
+  font-size: 0.85rem !important;
+  resize: vertical;
+  min-height: 75px;
+}
+
+.wow-looter-settings-app .setting-textarea:focus {
+  border-color: var(--wow-accent) !important;
+  outline: none;
+}
+
+/* Footer Buttons */
+.wow-looter-settings-app .settings-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+  padding-top: 4px;
+}
+
+.wow-looter-settings-app .btn-footer-cancel {
+  height: 36px;
+  padding: 0 16px;
+  background: #242c3d;
+  border: 1px solid #364259;
+  color: #e2e8f0;
+  border-radius: 4px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.wow-looter-settings-app .btn-footer-cancel:hover {
+  background: #2f3a50;
+  border-color: #485875;
+  color: #fff;
+}
+
+.wow-looter-settings-app .btn-footer-save {
+  height: 36px;
+  padding: 0 18px;
+  background: linear-gradient(180deg, #d39e24 0%, #b88619 100%);
+  border: 1px solid #e5b035;
+  color: #ffffff;
+  border-radius: 4px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+
+.wow-looter-settings-app .btn-footer-save:hover {
+  filter: brightness(1.1);
+}
+
+
+
+.wow-looter-app .name-desc-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wow-looter-app .toggle-desc-icon {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  transition: transform 0.2s ease;
+}
+
+.wow-looter-app .item-description-drawer {
+  width: 100%;
+  background: rgba(10, 12, 18, 0.95);
+  border-top: 1px dashed #333d4d;
+  padding: 8px 10px;
+  font-size: 0.78rem;
+  color: #cbd5e1;
+  max-height: 200px;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.wow-looter-app .item-description-drawer .item-desc-content {
+  line-height: 1.45;
+}
+
+.wow-looter-app .item-description-drawer .item-desc-content p {
+  margin: 0 0 6px 0;
+}
+
+.wow-looter-app .item-description-drawer .item-desc-content p:last-child {
+  margin-bottom: 0;
+}
+
+.wow-looter-app .item-description-drawer .item-desc-content strong,
+.wow-looter-app .item-description-drawer .item-desc-content b {
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.wow-looter-app .item-description-drawer .item-desc-content em,
+.wow-looter-app .item-description-drawer .item-desc-content i {
+  font-style: italic;
+}
+
+.wow-looter-app .item-description-drawer .item-desc-content code,
+.wow-looter-app .item-description-drawer .item-desc-content a.content-link,
+.wow-looter-app .item-description-drawer .item-desc-content a.inline-roll,
+.wow-looter-app .item-description-drawer .item-desc-content span[data-pf2-action],
+.wow-looter-app .item-description-drawer .item-desc-content .inline-check {
+  background: rgba(30, 41, 59, 0.85);
+  border: 1px solid #3b485d;
+  border-radius: 3px;
+  padding: 1px 4px;
+  color: #f1f5f9;
+  font-size: 0.92em;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  text-decoration: none;
+}
+
+.wow-looter-app .item-description-drawer .item-desc-content code {
+  font-family: var(--font-mono, monospace);
+}
+
+.wow-looter-app .item-description-drawer .item-desc-content .pf2e-icon,
+.wow-looter-app .item-description-drawer .item-desc-content .action-glyph {
+  font-family: "Pathfinder2eActions", var(--font-awesome, "Font Awesome 6 Free"), sans-serif;
+  font-style: normal;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.wow-looter-app .item-description-drawer .item-desc-content img {
+  max-width: 100%;
+  height: auto;
+}
+
+.wow-looter-app .item-description-drawer .no-desc {
+  font-style: italic;
+  color: #64748b;
+  margin: 0;
+}
+
+/* Chat Cards de Anuncios */
+.wow-looter-chat-card.loot-pickup-card {
+  background: var(--color-bg-subtle, rgba(0, 0, 0, 0.04));
+  border: 1px solid var(--color-border-subtle, rgba(128, 128, 128, 0.25));
+  border-radius: 4px;
+  padding: 8px 10px;
+  color: inherit;
+  box-shadow: none;
+}
+
+.loot-pickup-card .card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--color-border-subtle, rgba(128, 128, 128, 0.2));
+  padding-bottom: 6px;
+  margin-bottom: 6px;
+}
+
+.loot-pickup-card .item-chat-img {
+  width: 34px;
+  height: 34px;
+  border-radius: 3px;
+  border: 1px solid var(--color-border-subtle, rgba(128, 128, 128, 0.25));
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.loot-pickup-card .card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.loot-pickup-card .pickup-title {
+  font-size: 0.8rem;
+  color: inherit;
+  opacity: 0.85;
+}
+
+.loot-pickup-card .pickup-title strong {
+  color: inherit;
+}
+
+.loot-pickup-card .pickup-item-name {
+  font-size: 0.92rem;
+  font-weight: bold;
+  color: inherit;
+}
+
+.loot-pickup-card .pickup-items-list {
+  list-style: none;
+  margin: 6px 0 0 0;
+  padding: 4px 0 0 0;
+  border-top: 1px dashed var(--color-border-subtle, rgba(128, 128, 128, 0.25));
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.loot-pickup-card .pickup-items-list li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: inherit;
+}
+
+.loot-pickup-card .mini-chat-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 2px;
+  object-fit: cover;
+  border: 1px solid var(--color-border-subtle, rgba(128, 128, 128, 0.25));
+}
+
+.loot-pickup-card .card-footer {
+  margin-top: 6px;
+  padding-top: 4px;
+  border-top: 1px solid var(--color-border-subtle, rgba(128, 128, 128, 0.2));
+  font-size: 0.74rem;
+  color: inherit;
+  opacity: 0.85;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.wow-looter-chat-card .summary-currencies {
+  margin-top: 8px;
+  border-top: 1px solid var(--color-border-subtle, rgba(128, 128, 128, 0.2));
+  padding-top: 6px;
+}
+
+.wow-looter-chat-card .summary-currencies h4 {
+  margin: 0 0 4px 0;
+  font-size: 0.85rem;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wow-looter-chat-card .currency-list li {
+  font-size: 0.82rem;
+  color: inherit;
+}
+
+/* ========================================================
+   Custom Currencies Window
+   ======================================================== */
+.wow-looter-custom-currencies-app {
+  width: 480px !important;
+  height: auto !important;
+  max-height: 85vh !important;
+}
+
+.wow-looter-custom-currencies-app .currency-drop-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 24px 16px;
+  background: rgba(16, 20, 28, 0.7);
+  border: 2px dashed #3a475d;
+  border-radius: 6px;
+  color: #94a3b8;
+  text-align: center;
+  margin-bottom: 14px;
+  transition: all 0.2s ease;
+}
+
+.wow-looter-custom-currencies-app .currency-drop-zone.drag-hover,
+.wow-looter-custom-currencies-app .currency-drop-zone:hover {
+  border-color: var(--wow-accent);
+  background: var(--wow-accent-soft-bg);
+  color: var(--wow-accent);
+}
+
+.wow-looter-custom-currencies-app .currency-drop-zone i {
+  color: var(--wow-accent);
+}
+
+.wow-looter-custom-currencies-app .drop-text {
+  margin: 0;
+  font-size: 0.85rem;
+  max-width: 320px;
+  line-height: 1.35;
+}
+
+.wow-looter-custom-currencies-app .custom-currencies-list-container h3 {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--wow-accent);
+  margin: 0 0 8px 0;
+}
+
+.wow-looter-custom-currencies-app .custom-currencies-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 240px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.wow-looter-custom-currencies-app .custom-currency-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #181f2c;
+  border: 1px solid #283245;
+  border-radius: 5px;
+  padding: 6px 10px;
+}
+
+.wow-looter-custom-currencies-app .custom-currency-thumb {
+  width: 34px;
+  height: 34px;
+  border-radius: 4px;
+  object-fit: cover;
+  border: 1px solid #364259;
+}
+
+.wow-looter-custom-currencies-app .custom-currency-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wow-looter-custom-currencies-app .custom-currency-name {
+  font-weight: 600;
+  color: #f3f4f6;
+  font-size: 0.88rem;
+}
+
+.wow-looter-custom-currencies-app .custom-currency-key {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.wow-looter-custom-currencies-app .custom-currency-key code {
+  background: #10141d;
+  padding: 1px 4px;
+  border-radius: 3px;
+  color: var(--wow-accent);
+}
+
+/* ========================================================
+   WoW Looter - Merchant (Comerciante) Styling
+   ======================================================== */
+
+.wow-looter-merchant-app {
+  min-width: 780px;
+  background: #11141c !important;
+  border: 1px solid #283245 !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8), inset 0 0 1px rgba(255, 255, 255, 0.1) !important;
+}
+
+.wow-looter-merchant-app .window-content {
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 8px 12px !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.merchant-window {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100%;
+  gap: 8px;
+  padding: 0;
+  min-height: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.merchant-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.merchant-header h2 {
+  color: var(--wow-accent);
+  font-size: 1.15rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  border-bottom: none;
+}
+
+.merchant-header .header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.merchant-header .header-btn {
+  background: transparent;
+  border: none;
+  color: #8da2c4;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.merchant-header .header-btn:hover {
+  color: var(--wow-accent);
+  background: #1e2636;
+}
+
+/* Barra Superior: "Shopping as" y "Your funds" */
+.merchant-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 6px 12px;
+  background: #131822;
+  border: 1px solid #283345;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.shopping-as-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.shopping-as-icon {
+  color: #8da2c4;
+  font-size: 0.95rem;
+}
+
+.shopping-as-label {
+  color: #8da2c4;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.shopping-as-select-wrap {
+  flex: 1;
+  max-width: 220px;
+}
+
+.shopping-as-select {
+  width: 100%;
+  background: #0f131a;
+  border: 1px solid #2d3a4e;
+  border-radius: 4px;
+  color: #f1f5f9;
+  padding: 4px 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.shopping-as-select:focus {
+  border-color: var(--wow-accent);
+  outline: none;
+}
+
+.shopping-as-static {
+  color: #f1f5f9;
+  font-weight: 700;
+  font-size: 0.88rem;
+}
+
+.your-funds-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.funds-label-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #8da2c4;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.funds-icon {
+  color: #8da2c4;
+}
+
+/* Grilla en 2 Columnas */
+.merchant-body-grid {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 10px;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Columna Izquierda: Avatar y Descripción */
+.merchant-left-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.merchant-avatar-box {
+  background: #0f131a;
+  border: 1px solid #283345;
+  border-radius: 6px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.merchant-avatar-img {
+  width: 100%;
+  height: 220px;
+  object-fit: contain;
+  border-radius: 4px;
+  background: #0a0d14;
+}
+
+.merchant-desc-card {
+  background: #131822;
+  border: 1px solid #283345;
+  border-radius: 6px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-height: 120px;
+}
+
+.desc-card-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--wow-accent);
+}
+
+.desc-card-divider {
+  height: 1px;
+  background: #283345;
+  width: 100%;
+  margin: 2px 0;
+}
+
+.desc-card-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.desc-card-text {
+  font-size: 0.82rem;
+  color: #8da2c4;
+  font-style: italic;
+  margin: 0;
+  line-height: 1.35;
+}
+
+.desc-placeholder {
+  color: #64748b;
+  font-style: italic;
+}
+
+.btn-edit-desc {
+  background: #1e2636;
+  border: 1px solid #3c4a63;
+  color: #cbd5e1;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: auto;
+  transition: all 0.15s ease;
+}
+
+.btn-edit-desc:hover {
+  background: #2a354b;
+  color: #ffffff;
+  border-color: #55688a;
+}
+
+/* Columna Derecha */
+.merchant-right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Pestañas de Navegación */
+.merchant-nav-tabs-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.merchant-nav-tab {
+  background: #131822;
+  border: 1px solid #283345;
+  border-radius: 4px;
+  padding: 8px 12px;
+  color: #8da2c4;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.merchant-nav-tab:focus,
+.merchant-nav-tab:focus-visible,
+.merchant-nav-tab:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.merchant-nav-tab:hover {
+  background: #1c2332;
+  border-color: #3d4d68;
+  color: #e2e8f0;
+}
+
+.merchant-nav-tab.active {
+  background: #171d28;
+  border: 1.5px solid var(--wow-accent-border) !important;
+  color: var(--wow-accent);
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.merchant-nav-tab i {
+  font-size: 0.9rem;
+}
+
+/* Fila de Filtros y Búsqueda */
+.merchant-filters-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.merchant-filters-row .search-input-wrap {
+  flex: 1;
+}
+
+.merchant-search-input {
+  width: 100%;
+  min-width: 250px;
+  background: #131822;
+  border: 1px solid #283345;
+  border-radius: 4px;
+  color: #f1f5f9;
+  padding: 4px 8px;
+  font-size: 0.85rem;
+  box-sizing: border-box;
+}
+
+.merchant-search-input:focus {
+  border-color: var(--wow-accent);
+  outline: none;
+}
+
+.merchant-filter-select,
+.merchant-sort-select {
+  background: #131822;
+  border: 1px solid #283345;
+  border-radius: 4px;
+  color: #f1f5f9;
+  padding: 4px 8px;
+  font-size: 0.85rem;
+  font-weight: 300;
+  cursor: pointer;
+}
+
+.merchant-filter-select:focus,
+.merchant-sort-select:focus {
+  border-color: var(--wow-accent);
+  outline: none;
+}
+
+/* Caja de Mercancía / Inventario */
+.merchandise-box {
+  background: #171d28;
+  border: 1px solid #283345;
+  border-radius: 4px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.merchandise-box .box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  flex-shrink: 0;
+}
+
+.merchant-dropzone {
+  border: 1.5px dashed #3d4a63;
+  border-radius: 6px;
+  background: rgba(20, 26, 36, 0.6);
+  color: #8da2c4;
+  font-size: 0.82rem;
+  font-style: italic;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.merchant-dropzone.drag-hover {
+  border-color: var(--wow-accent);
+  background: var(--wow-accent-soft-bg);
+  color: var(--wow-accent);
+}
+
+.merchant-items-scroll-area {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-right: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: #3b475c rgba(13, 17, 23, 0.4);
+}
+
+.merchant-items-scroll-area::-webkit-scrollbar {
+  width: 6px;
+}
+
+.merchant-items-scroll-area::-webkit-scrollbar-track {
+  background: rgba(13, 17, 23, 0.4);
+  border-radius: 4px;
+}
+
+.merchant-items-scroll-area::-webkit-scrollbar-thumb {
+  background: #3b475c;
+  border-radius: 4px;
+}
+
+.merchant-items-scroll-area::-webkit-scrollbar-thumb:hover {
+  background: #55688a;
+}
+
+/* Grupos por Categoría */
+.merchant-category-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.category-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 4px 6px 2px 6px;
+  border-bottom: 1px solid #232c3d;
+}
+
+.category-title {
+  font-weight: 700;
+  color: #cbd5e1;
+  font-size: 0.88rem;
+}
+
+.category-col-headers {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #8da2c4;
+}
+
+.category-col-headers .col-qty {
+  width: 76px;
+  min-width: 76px;
+  max-width: 76px;
+  margin-right: 12px;
+  box-sizing: border-box;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.category-col-headers .col-bulk {
+  width: 48px;
+  min-width: 48px;
+  max-width: 48px;
+  box-sizing: border-box;
+  text-align: left;
+  flex-shrink: 0;
+}
+
+.category-col-headers .col-price {
+  width: 80px;
+  min-width: 80px;
+  max-width: 80px;
+  box-sizing: border-box;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+}
+
+.category-col-headers .col-actions-spacer {
+  width: 68px;
+  min-width: 68px;
+  max-width: 68px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.category-col-headers.is-gm .col-actions-spacer {
+  width: 136px;
+  min-width: 136px;
+  max-width: 136px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.category-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Tarjeta / Fila de Item en Merchant */
+.merchant-item-card {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(40, 51, 69, 0.35);
+  border-radius: 3px;
+  overflow: hidden;
+  transition: background 0.12s ease;
+}
+
+.merchant-item-card:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.merchant-item-card:hover {
+  background: rgba(255, 255, 255, 0.065);
+}
+
+.merchant-item-card.item-hidden-row {
+  opacity: 0.5;
+}
+
+.merchant-item-card .item-main-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 6px;
+  min-height: 30px;
+}
+
+.merchant-item-card .item-left-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.merchant-item-card .item-img {
+  width: 26px;
+  height: 26px;
+  border-radius: 3px;
+  border: 1px solid #364259;
+  object-fit: cover;
+  background: #0b0e14;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.merchant-item-card .item-name {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #f1f5f9;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.merchant-item-card .toggle-desc-icon {
+  color: #8da2c4;
+  font-size: 0.72rem;
+  cursor: pointer;
+  margin-left: 2px;
+}
+
+.merchant-item-card .item-right-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.merchant-item-card .item-qty-box {
+  width: 76px;
+  min-width: 76px;
+  max-width: 76px;
+  margin-right: 12px;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.merchant-stock-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.btn-stock-step {
+  width: 18px !important;
+  height: 22px !important;
+  min-width: 18px !important;
+  padding: 0 !important;
+  background: #1a2230 !important;
+  border: 1px solid #2d384d !important;
+  color: #cbd5e1 !important;
+  border-radius: 3px !important;
+  cursor: pointer;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 0.65rem !important;
+}
+
+.btn-stock-step:hover {
+  border-color: var(--wow-accent) !important;
+  color: var(--wow-accent) !important;
+}
+
+.merchant-stock-input {
+  width: 34px !important;
+  height: 22px !important;
+  box-sizing: border-box !important;
+  text-align: center !important;
+  padding: 0 !important;
+  font-size: 0.8rem !important;
+  font-weight: 700 !important;
+  background: #10141d !important;
+  border: 1px solid #2d384d !important;
+  color: #f8fafc !important;
+  border-radius: 3px !important;
+}
+
+.merchant-stock-input::-webkit-outer-spin-button,
+.merchant-stock-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.merchant-stock-badge {
+  display: inline-block;
+  width: 36px;
+  line-height: 22px;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #cbd5e1;
+}
+
+.item-bulk-box {
+  width: 48px;
+  min-width: 48px;
+  max-width: 48px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: left;
+  gap: 4px;
+  color: #8da2c4;
+  font-size: 0.78rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.item-bulk-box i {
+  font-size: 0.7rem;
+  width: 14px;
+  text-align: center;
+  flex-shrink: 0;
+  color: #8da2c4;
+}
+
+.item-price-tag {
+  width: 80px;
+  min-width: 80px;
+  max-width: 80px;
+  box-sizing: border-box;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: left;
+  gap: 5px;
+  color: #cbd5e1;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+}
+
+.item-price-tag i {
+  color: #8da2c4;
+  font-size: 0.76rem;
+  flex-shrink: 0;
+}
+
+.btn-trade-action,
+.btn-buy-green {
+  width: 68px !important;
+  min-width: 68px !important;
+  max-width: 68px !important;
+  box-sizing: border-box !important;
+  text-align: center !important;
+  background: #059669 !important;
+  border: 1px solid #10b981 !important;
+  color: #ffffff !important;
+  font-weight: 500 !important;
+  font-size: 0.8rem;
+  height: 10px !important;
+  padding: 0 0px !important;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  padding: 0px 0px;
+}
+
+.btn-buy-green:hover:not(:disabled) {
+  background: #10b981 !important;
+}
+
+.btn-buy-green:disabled {
+  background: #1e2e28 !important;
+  border-color: #2a473b !important;
+  color: #5a756b !important;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-identify-pending,
+.btn-identify-pending:disabled {
+  width: auto !important;
+  min-width: 74px !important;
+  max-width: none !important;
+  padding: 0 7px !important;
+  gap: 4px !important;
+  background: #452a08 !important;
+  border: 1px solid #d97706 !important;
+  color: #fcd34d !important;
+  font-size: 0.74rem !important;
+  cursor: wait !important;
+  opacity: 0.95 !important;
+}
+
+.btn-identify-pending i {
+  font-size: 0.72rem;
+  color: #fbbf24;
+  animation: wow-identify-spin 1s linear infinite;
+}
+
+@keyframes wow-identify-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.btn-item-visibility {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  transition: all 0.15s ease;
+}
+
+.btn-item-visibility:hover {
+  background: #2a354b;
+  color: #f1f5f9;
+  border-color: #55688a;
+}
+
+.btn-item-visibility.is-hidden {
+  color: #f87171;
+  border-color: #7f2525;
+  background: #331616;
+}
+
+/* Cajón de Descripción */
+.merchant-item-card .item-description-drawer {
+  background: #0d1117;
+  border-top: 1px solid #1e2636;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  color: #cbd5e1;
+  line-height: 1.4;
+}
+
+.item-qty-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed #283345;
+}
+
+.item-qty-slider-row label {
+  font-weight: 600;
+  color: #8da2c4;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.item-qty-slider-row .qty-slider {
+  flex: 1;
+  accent-color: #10b981;
+  cursor: pointer;
+}
+
+.item-qty-slider-row .qty-slider-val {
+  font-weight: 700;
+  color: var(--wow-accent);
+  font-size: 0.85rem;
+  min-width: 50px;
+  text-align: right;
+}
+
+/* Pie de Ventana del Mercader */
+.merchant-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 8px;
+  border-top: 1px solid #283345;
+  margin-top: auto;
+  flex-shrink: 0;
+}
+
+.btn-footer-close {
+  background: #1e2636 !important;
+  border: 1px solid #3b485d !important;
+  color: #f1f5f9 !important;
+  border-radius: 4px;
+  padding: 6px 18px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.btn-footer-close:hover {
+  background: #2c384e !important;
+  border-color: #50617e !important;
+}
+
+/* Chat Card para Compras y Ventas de Mercader */
+.merchant-chat-card .merchant-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.wow-looter-chat-card .merchant-price-badge,
+.merchant-price-badge {
+  background: var(--color-bg-subtle, rgba(0, 0, 0, 0.08));
+  border: 1px solid var(--color-border-subtle, currentColor);
+  color: inherit;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Modificadores en Loot Settings */
+.unit-input-group {
+  display: flex;
+  align-items: center;
+  background: #141a24;
+  border: 1px solid #2d384c;
+  border-radius: 5px;
+  padding-right: 8px;
+}
+
+.unit-input-group .num-input {
+  border: none !important;
+  background: transparent !important;
+}
+
+.unit-addon {
+  color: #94a3b8;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+/* Buyback & Identify Styles */
+.badge-buyback {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #172c38;
+  border: 1px solid #2d6280;
+  color: #72c8f2;
+  font-size: 0.72rem;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.btn-buyback {
+  background: linear-gradient(180deg, #1f4f6e 0%, #13344a 100%);
+  border-color: #2e7ca8;
+  color: #e0f4ff;
+}
+
+.btn-buyback:hover:not(.disabled) {
+  background: linear-gradient(180deg, #27658d 0%, #1a4461 100%);
+}
+
+.btn-identify {
+  background: linear-gradient(180deg, #5b2875 0%, #3e1654 100%);
+  border-color: #8c3bb8;
+  color: #f7e6ff;
+}
+
+.btn-identify:hover:not(.disabled) {
+  background: linear-gradient(180deg, #743394 0%, #4f1d6b 100%);
+}
+
+.mystery-img {
+  border: 1px dashed #a855f7 !important;
+  filter: drop-shadow(0 0 4px rgba(168, 85, 247, 0.4));
+}
+
+/* Badges de Rareza */
+.rarity-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 4px;
+  text-transform: capitalize;
+  border: 1px solid transparent;
+}
+
+.rarity-badge.common {
+  background: #1a232f;
+  border-color: #3b4859;
+  color: #94a3b8;
+}
+
+.rarity-badge.uncommon {
+  background: #122b1c;
+  border-color: #276e41;
+  color: #4ade80;
+}
+
+.rarity-badge.rare {
+  background: #10263d;
+  border-color: #2563eb;
+  color: #60a5fa;
+}
+
+.rarity-badge.very-rare,
+.rarity-badge.veryRare,
+.rarity-badge.unique {
+  background: #2e163d;
+  border-color: #9333ea;
+  color: #c084fc;
+}
+
+.rarity-badge.legendary,
+.rarity-badge.artifact {
+  background: #3b220d;
+  border-color: #f59e0b;
+  color: #fbbf24;
+}
+
+.empty-subtext {
+  font-size: 0.8rem;
+  color: #64748b;
+  font-style: italic;
+}
+
+/* Configuración de Precios por Rareza en Loot Settings */
+.settings-subsection-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--wow-accent);
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed #2d384c;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rarity-prices-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.rarity-price-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: #121722;
+  border: 1px solid #263246;
+  border-radius: 5px;
+  padding: 4px 8px;
+}
+
+.rarity-price-item .unit-input-group {
+  width: 90px;
+}
+
+/* Chevron uniforme con padding derecho de 8px en todos los dropdowns */
+.wow-looter-app select,
+.wow-looter-manual-app select,
+.wow-looter-settings-app select,
+.merchant-window select {
+  box-sizing: border-box !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  line-height: normal !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23cbd5e1' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 8px center !important;
+  background-size: 12px 12px !important;
+  padding-right: 28px !important;
+}
+
+.wow-looter-app .custom-denom-select,
+.wow-looter-manual-app .looter-select,
+.wow-looter-player-app .looter-select,
+.wow-looter-manual-app .manual-currency-select,
+.wow-looter-settings-app .loot-type-select {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.wow-looter-app .not-enough-claim {
+  color: #f87171;
+  font-weight: 600;
+}
+
+.wow-looter-app .btn-split-item {
+  height: 24px;
+  padding: 0 8px;
+  font-size: 0.75rem;
+  background: #1e2636;
+  border: 1px solid #3b485d;
+  color: #cbd5e1;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.wow-looter-app .btn-split-item:hover {
+  border-color: var(--wow-accent-strong);
+  color: #f8fafc;
+}
+
+/* Botones de tirada manual d100 en tarjeta de disputa del chat */
+.wow-looter-contested-card .roll-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+}
+
+.wow-looter-contested-card .roll-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wow-looter-contested-card .roll-pending {
+  opacity: 0.75;
+  font-style: italic;
+  font-size: 0.85em;
+}
+
+.wow-looter-contested-card .btn-roll-contested {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  padding: 0;
+  border-radius: 4px;
+  border: 1px solid var(--color-border-subtle, currentColor);
+  background: var(--color-bg-subtle, rgba(0, 0, 0, 0.08));
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wow-looter-contested-card .btn-roll-contested:hover {
+  opacity: 0.85;
+}
+
+.wow-looter-contested-card .btn-roll-all-contested {
+  width: 100%;
+  margin-top: 4px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--color-border-subtle, currentColor);
+  background: var(--color-bg-subtle, rgba(0, 0, 0, 0.08));
+  color: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* Ventana de Reportar Bug */
+.report-bug-window {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+}
+
+.report-bug-env {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 0.78rem;
+  color: #94a3b8;
+  background: #141a24;
+  border: 1px solid #242d3d;
+  border-radius: 5px;
+  padding: 6px 10px;
+}
+
+.report-bug-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.report-bug-field label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--wow-accent);
+}
+
+.report-bug-field input,
+.report-bug-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  background: #10141d !important;
+  color: #f8fafc !important;
+  border: 1px solid #283245 !important;
+  border-radius: 4px !important;
+  padding: 7px 9px !important;
+  font-size: 0.85rem !important;
+}
+
+.report-bug-field input:focus,
+.report-bug-field textarea:focus {
+  border-color: var(--wow-accent) !important;
+  outline: none;
+}
+
+.report-bug-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}

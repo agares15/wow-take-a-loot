@@ -1,0 +1,27 @@
+<div class="wow-looter-window report-bug-window">
+  <div class="report-bug-env">
+    <span><strong>Module:</strong> wow-take-a-loot v{{moduleVersion}}</span>
+    <span><strong>Foundry:</strong> v{{foundryVersion}}</span>
+    <span><strong>System:</strong> {{systemId}} v{{systemVersion}}</span>
+  </div>
+
+  <div class="report-bug-field">
+    <label for="wow-looter-bug-subject">{{localize "WOW_LOOTER.ReportBug.Subject"}}</label>
+    <input id="wow-looter-bug-subject" type="text" name="subject" placeholder="{{localize 'WOW_LOOTER.ReportBug.SubjectPlaceholder'}}" />
+  </div>
+
+  <div class="report-bug-field">
+    <label for="wow-looter-bug-desc">{{localize "WOW_LOOTER.ReportBug.Description"}}</label>
+    <textarea id="wow-looter-bug-desc" name="description" rows="7" placeholder="{{localize 'WOW_LOOTER.ReportBug.DescriptionPlaceholder'}}"></textarea>
+  </div>
+
+  <footer class="looter-footer report-bug-footer">
+    <button type="button" class="btn btn-secondary" data-action="copy-report">
+      <i class="fas fa-copy"></i> {{localize "WOW_LOOTER.ReportBug.Copy"}}
+    </button>
+    <button type="button" class="btn btn-primary" data-action="send-report">
+      <i class="fas fa-paper-plane"></i> {{localize "WOW_LOOTER.ReportBug.Send"}}
+    </button>
+  </footer>
+</div>
+

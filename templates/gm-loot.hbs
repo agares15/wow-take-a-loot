@@ -1,0 +1,165 @@
+<div class="wow-looter-window gm-window">
+  <!-- Cabecera de la Ventana -->
+  <header class="looter-header gm-header">
+    <div class="header-main">
+      <h2><i class="fas fa-coins"></i> {{localize "WOW_LOOTER.GM.Title"}}</h2>
+    </div>
+    <p class="subtitle">{{localize "WOW_LOOTER.GM.Subtitle"}}</p>
+  </header>
+
+  <!-- Grilla de 2 Columnas -->
+  <div class="looter-grid">
+    <!-- Columna Izquierda: Enemigos y Jugadores -->
+    <section class="looter-column side-column">
+      
+      <!-- Panel 1: Defeated Enemies -->
+      <div class="looter-box enemies-box drop-target" data-drop-type="actor">
+        <div class="box-header">
+          <h3><i class="fas fa-skull"></i> {{localize "WOW_LOOTER.GM.Enemies"}}</h3>
+          <span class="badge counter-badge">{{enemies.length}}</span>
+        </div>
+        <p class="hint">{{localize "WOW_LOOTER.GM.DragActorHint"}}</p>
+        
+        <ul class="actor-checklist enemies-checklist">
+          {{#each enemies}}
+          <li class="actor-item enemy-item {{#if this.selected}}selected{{/if}}">
+            <label class="checkbox-label">
+              <input type="checkbox" class="styled-checkbox" data-action="toggle-enemy" data-actor-id="{{this.id}}" {{#if this.selected}}checked{{/if}}>
+              <span class="avatar-circle-wrap">
+                <img src="{{this.img}}" alt="{{this.name}}" class="avatar-circle-img" style="transform: scale({{this.scaleX}}, {{this.scaleY}});" />
+              </span>
+              <span class="actor-name">{{this.name}}</span>
+            </label>
+          </li>
+          {{else}}
+          <li class="empty-state">{{localize "WOW_LOOTER.GM.NoEnemies"}}</li>
+          {{/each}}
+        </ul>
+      </div>
+
+      <!-- Panel 2: Player Characters -->
+      <div class="looter-box players-box">
+        <div class="box-header">
+          <h3><i class="fas fa-users"></i> {{localize "WOW_LOOTER.GM.EligiblePlayers"}}</h3>
+          <span class="badge counter-badge">{{players.length}}</span>
+        </div>
+        <p class="hint">{{localize "WOW_LOOTER.GM.SelectPlayersHint"}}</p>
+
+        <ul class="actor-checklist players-checklist">
+          {{#each players}}
+          <li class="actor-item player-item {{#if this.selected}}selected{{/if}}">
+            <label class="checkbox-label">
+              <input type="checkbox" class="styled-checkbox" data-action="toggle-player" data-actor-id="{{this.characterId}}" {{#if this.selected}}checked{{/if}}>
+              <span class="avatar-circle-wrap">
+                <img src="{{this.characterImg}}" alt="{{this.characterName}}" class="avatar-circle-img" style="transform: scale({{this.scaleX}}, {{this.scaleY}});" />
+              </span>
+              <div class="player-info">
+                <span class="char-name">{{this.characterName}}</span>
+                <span class="user-name">{{this.userName}}</span>
+              </div>
+            </label>
+          </li>
+          {{else}}
+          <li class="empty-state">{{localize "WOW_LOOTER.GM.NoPlayersOnline"}}</li>
+          {{/each}}
+        </ul>
+      </div>
+    </section>
+
+    <!-- Columna Derecha: Monedas y Loot Pool -->
+    <section class="looter-column main-column">
+      
+      <!-- Panel 3: Total Loot Currency -->
+      <div class="looter-box currency-summary-box">
+        <div class="box-header">
+          <h3><i class="fas fa-coins"></i> {{localize "WOW_LOOTER.GM.TotalCurrency"}}</h3>
+        </div>
+        <div class="currency-pills-row">
+          {{#each currencies}}
+          <div class="currency-pill {{this.key}}">
+            <img src="{{this.img}}" alt="{{this.label}}" class="currency-coin-icon" />
+            <input type="number" class="coin-input num-box" data-action="edit-currency" data-currency="{{this.key}}" value="{{this.value}}" min="0" />
+            <span class="currency-denom-label">{{this.label}}</span>
+          </div>
+          {{/each}}
+        </div>
+      </div>
+
+      <!-- Panel 4: Loot Pool -->
+      <div class="looter-box loot-items-box drop-target" data-drop-type="item-or-table">
+        <div class="box-header">
+          <h3><i class="fas fa-boxes-stacked"></i> {{localize "WOW_LOOTER.GM.LootPool"}}</h3>
+          <div class="box-header-actions">
+            <button type="button" class="btn btn-add-table" data-action="add-roll-table" title="{{localize 'WOW_LOOTER.GM.AddRollTableHint'}}">
+              <i class="fas fa-dice-d20"></i> {{localize "WOW_LOOTER.GM.AddRollTable"}}
+            </button>
+          </div>
+        </div>
+
+        <!-- Zona Drag & Drop para el GM -->
+        <div class="loot-dropzone drop-target" data-drop-type="item-or-table">
+          <i class="fas fa-plus-circle"></i> Drag & Drop items here to add to Loot Pool
+        </div>
+
+        <div class="loot-items-list-container">
+          {{#if groupedItems.length}}
+            {{#each groupedItems}}
+            <div class="gm-loot-category-group">
+              <div class="category-header-row">
+                <span class="category-title">{{this.category}}</span>
+              </div>
+              <ul class="loot-items-list">
+                {{#each this.items}}
+                <li class="loot-item-entry pool-item-card" data-item-id="{{this.id}}">
+                  <div class="item-main-row">
+                    <img src="{{this.img}}" alt="{{this.name}}" class="item-img" data-action="toggle-item-desc" />
+                    <div class="item-details" data-action="toggle-item-desc">
+                      <div class="name-desc-toggle">
+                        <span class="item-name">{{this.name}}</span>
+                        {{#if (gt this.quantity 1)}}
+                          <span class="item-qty-badge">x{{this.quantity}}</span>
+                        {{/if}}
+                        <i class="fas fa-chevron-down toggle-desc-icon"></i>
+                      </div>
+                    </div>
+                    <div class="item-right-tools">
+                      <button type="button" class="btn-trash-item" data-action="remove-item" data-item-id="{{this.id}}" title="{{localize 'WOW_LOOTER.GM.RemoveItem'}}">
+                        <i class="fas fa-trash-can"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="item-description-drawer" style="display: none;">
+                    {{#if this.description}}
+                      <div class="item-desc-content">{{{this.description}}}</div>
+                    {{else}}
+                      <p class="no-desc">{{localize "WOW_LOOTER.Common.NoDescription"}}</p>
+                    {{/if}}
+                  </div>
+                </li>
+                {{/each}}
+              </ul>
+            </div>
+            {{/each}}
+          {{else}}
+            <div class="empty-state loot-empty">
+              <i class="fas fa-box-open fa-2x"></i>
+              <p>{{localize "WOW_LOOTER.GM.LootPoolEmpty"}}</p>
+            </div>
+          {{/if}}
+        </div>
+      </div>
+
+    </section>
+  </div>
+
+  <!-- Pie de la Ventana -->
+  <footer class="looter-footer gm-footer">
+    <button type="button" class="btn btn-secondary btn-gm-cancel" data-action="cancel">
+      <i class="fas fa-times"></i> {{localize "WOW_LOOTER.Common.Cancel"}}
+    </button>
+    <button type="button" class="btn btn-primary btn-gm-send" data-action="distribute-to-players" {{#unless canDistribute}}disabled{{/unless}}>
+      <i class="fas fa-paper-plane"></i> {{localize "WOW_LOOTER.GM.SendToPlayers"}}
+    </button>
+  </footer>
+</div>
+
