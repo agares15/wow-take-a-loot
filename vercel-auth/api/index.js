@@ -2,6 +2,24 @@ const crypto = require("crypto");
 
 module.exports = async (req, res) => {
   try {
+    const requiredVars = [
+      "TOKEN_SIGNING_SECRET",
+      "PATREON_CLIENT_ID",
+      "PATREON_CLIENT_SECRET",
+      "PATREON_CREATOR_ACCESS_TOKEN",
+      "GITHUB_TOKEN",
+      "GITHUB_OWNER",
+      "GITHUB_REPO"
+    ];
+    const missingVars = requiredVars.filter((k) => !process.env[k]);
+    if (missingVars.length > 0) {
+      return sendHtml(
+        res,
+        500,
+        renderErrorPage(`Missing Environment Variables in Vercel: ${missingVars.join(", ")}`)
+      );
+    }
+
     const proto = req.headers["x-forwarded-proto"] || "https";
     const host = req.headers["x-forwarded-host"] || req.headers.host;
     const origin = `${proto}://${host}`;
