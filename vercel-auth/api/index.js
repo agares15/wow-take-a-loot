@@ -188,6 +188,11 @@ async function verifyUserMembershipFromOAuth(accessToken) {
   if (!res.ok) return { active: false, memberId: null };
 
   const json = await res.json();
+  const creatorId = (process.env.CREATOR_PATREON_USER_ID || "").trim();
+  if (creatorId && json?.data?.id === creatorId) {
+    return { active: true, memberId: `creator:${creatorId}` };
+  }
+
   const included = json?.included || [];
   const memberships = included.filter((item) => item.type === "member");
   const validMember = memberships.find((m) => matchesMembership(m));
@@ -199,6 +204,11 @@ async function verifyUserMembershipFromOAuth(accessToken) {
 }
 
 async function isMemberStillActive(memberId) {
+  const creatorId = (process.env.CREATOR_PATREON_USER_ID || "").trim();
+  if (creatorId && memberId === `creator:${creatorId}`) {
+    return true;
+  }
+
   const apiUrl =
     `https://www.patreon.com/api/oauth2/v2/members/${encodeURIComponent(memberId)}` +
     "?include=currently_entitled_tiers,campaign" +
