@@ -173,7 +173,8 @@ function matchesMembership(memberObj) {
     const tiers = memberObj.relationships?.currently_entitled_tiers?.data || [];
     return tiers.some((t) => requiredTiers.includes(t.id));
   }
-  return true;
+
+  return (Number(memberObj.attributes?.currently_entitled_amount_cents) || 0) > 0;
 }
 
 async function verifyUserMembershipFromOAuth(accessToken) {
