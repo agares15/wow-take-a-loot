@@ -1,168 +1,168 @@
 # Wow's Take a Loot (PF2e & D&D 5e)
 
-Gestor integral de botín, cofres y mercaderes para **Foundry Virtual Tabletop** (compatible con **Foundry v12 – v14**), diseñado para **Pathfinder 2e (`pf2e`)** y **D&D 5e (`dnd5e`)** en un único módulo unificado.
+A comprehensive loot, container, and merchant manager for **Foundry Virtual Tabletop** (compatible with **Foundry v12 – v14**), built for **Pathfinder 2e (`pf2e`)** and **D&D 5e (`dnd5e`)** in a single unified module.
 
-Inspirado en el sistema de botín grupal y comercio de *World of Warcraft*, incluye distribución en tiempo real por sockets, resolución de disputas con `d100`, loot manual por proximidad, contenedores interactivos, mercaderes completos con identificación de objetos y monedas personalizadas.
+Inspired by *World of Warcraft*'s party loot distribution and trading systems, it features real-time socket synchronization, `d100` contested roll resolution, proximity-based manual looting, interactive containers, full-featured merchants with item identification, and custom currencies.
 
 ---
 
-## 📋 Requisitos y Compatibilidad
+## 📋 Requirements & Compatibility
 
-- **Foundry VTT**: v12 (mínimo) — v14 (verificado)
-- **Sistemas soportados**:
+- **Foundry VTT**: v12 (minimum) — v14 (verified)
+- **Supported Systems**:
   - **D&D 5e** (`dnd5e` >= `3.0.0`)
   - **Pathfinder 2e** (`pf2e` >= `5.0.0`)
-- **Idiomas incluidos**: Español (`es`) e Inglés (`en`)
+- **Included Languages**: English (`en`) and Spanish (`es`)
 
 ---
 
-## 🌟 Guía de Funcionalidades
+## 🌟 Feature Guide
 
-### 1. Distribución de Botín de Combate (GM Panel & Ventana de Jugadores)
+### 1. Post-Combat Loot Distribution (GM Panel & Player Window)
 
-Al finalizar un combate (`deleteCombat`), el módulo detecta automáticamente a los combatientes enemigos y abre el **Looter - GM Panel** para el Director de Juego:
+When a combat encounter ends (`deleteCombat`), the module automatically detects defeated enemy combatants and opens the **Looter - GM Panel** for the Game Master:
 
-- **Enemigos y duplicados**: Cada token derrotado aparece como una instancia independiente en el contador de enemigos (incluso si hay varios tokens duplicados del mismo actor), permitiéndote incluir o excluir cada cuerpo individualmente.
-- **Jugadores elegibles**: Selecciona qué personajes jugadores participarán en el reparto.
-- **Reserva de botín (*Loot Pool*)**:
-  - Agrupa automáticamente los objetos y monedas de los enemigos seleccionados.
-  - Permite arrastrar (**Drag & Drop**) nuevos **Actores**, **Ítems** individuales o **Tablas de Tiradas (*Rollable Tables*)** directamente al panel sin generar tarjetas de tirada en el chat.
-  - Permite ajustar manualmente el total de monedas antes de enviar.
-- **Selección sincronizada en tiempo real**:
-  - Al pulsar **"Enviar a los Jugadores"**, todos los participantes ven la misma ventana sincronizada mediante sockets.
-  - Cada jugador selecciona los ítems que desea (mostrando su avatar sobre el objeto). Si dos o más jugadores eligen el mismo objeto, se marca visualmente como **en disputa**.
-  - Cada jugador decide si **repartir las monedas equitativamente** o **solicitar una cantidad específica**.
-- **Resolución de disputas (`d100`)**:
-  - **Modo automático** (por defecto): Al finalizar, el sistema tira `d100` por cada participante en disputa, anuncia el resultado en el chat y entrega el ítem al ganador.
-  - **Modo manual** (configurable en ajustes): Publica una tarjeta interactiva en el chat donde cada jugador implicado (o el GM) tira su `d100` manualmente, más un botón exclusivo para el GM para tirar por todos a la vez; solo cuando todos han tirado se habilita la distribución del ítem.
-
----
-
-### 2. Loot Manual, Contenedores y Token HUD
-
-Desde el **Token HUD** de cualquier token (botón con ícono de saco de monedas), el GM puede configurar el comportamiento individual del actor/token mediante **Loot Settings**:
-
-- **Looteable**: Permite que los jugadores abran el inventario de ese cuerpo o cofre haciendo doble clic sobre el token en la escena (dentro del rango de proximidad configurado).
-- **Requerir muerte para lootear**: Configurable tanto a nivel global como por instancia de actor; cuando está activo, los jugadores solo pueden lootear NPCs derrotados (el GM siempre puede inspeccionarlos).
-- **Detección automática de muerte**: Opcionalmente, marca automáticamente a los NPCs como looteables en cuanto mueren.
-- **Contenedores interactivos**: Permite asignar texturas de **cerrado** y **abierto** para cofres, cajas o cadáveres, cambiando su apariencia en escena al abrirlos o vaciarlos.
-- **Opciones en la ventana manual**: Recoger ítems individuales, *"Recoger Todo"*, *"Tomar todo el dinero"* o *"Repartir dinero con el grupo"*.
+- **Enemies & Duplicates**: Each defeated token is tracked as a separate instance in the enemy counter (even if there are multiple duplicate tokens of the same actor), allowing you to include or exclude each body individually.
+- **Eligible Players**: Choose which player characters will participate in the loot session.
+- **Loot Pool**:
+  - Automatically aggregates items and currencies from all selected enemies.
+  - Supports **Drag & Drop** of additional **Actors**, individual **Items**, or **Rollable Tables** directly into the pool without posting roll cards to chat.
+  - Allows the GM to manually adjust total currencies before sending.
+- **Real-Time Synchronized Claiming**:
+  - Clicking **"Send Loot to Players"** opens the synchronized window for all eligible participants via sockets.
+  - Players click items they want to claim (displaying their character avatar on the item). When two or more players claim the same item, it is highlighted as **Contested**.
+  - Each player can choose to **split currencies evenly** or **request a specific amount**.
+- **Contested Roll Resolution (`d100`)**:
+  - **Automatic mode** (default): Once everyone is ready (or the GM forces resolution), the module rolls `d100` for each contender, posts the results to chat, and awards the item to the highest roller.
+  - **Manual mode** (configurable in settings): Posts an interactive chat card where each involved player (or the GM) clicks a `d20` button to roll their `d100` individually, plus a GM-only button to roll for everyone at once; the item can only be distributed after all contenders have rolled.
 
 ---
 
-### 3. Sistema de Mercaderes (*Merchant*)
+### 2. Manual Looting, Containers & Token HUD
 
-Convierte cualquier token o actor en un **Mercader** desde sus *Loot Settings*:
+Using the coin-bag button on any token's **Token HUD**, the GM can configure per-instance behavior via **Loot Settings**:
 
-- **Pestañas disponibles**:
-  - **Comprar (*Buy*)**: Catálogo con búsqueda, filtro por categoría, ordenamiento, multiplicador de precio de compra, control de stock (`+` / `-` y entrada manual), visibilidad por ítem (ocultar/mostrar objetos para jugadores) y arrastre de ítems o *Rollable Tables*.
-  - **Vender (*Sell*)**: Los jugadores venden objetos de su inventario aplicando el multiplicador de venta del mercader.
-  - **Recompra (*Buyback*)**: Permite recuperar objetos vendidos recientemente durante la sesión.
-  - **Identificar (*Identify*)**: Los jugadores envían solicitudes de identificación de objetos no identificados. El botón cambia a estado **Pendiente** con un ícono animado mientras el GM recibe una ventana de aviso con la vista previa (sin identificar e identificada como referencia) para fijar el precio manualmente y **Aprobar** o **Rechazar**.
-- **Descripción personalizada**: El GM puede editar la descripción del mercader; los jugadores solo verán la descripción cuando el GM haya guardado una personalizada.
-- **Tarjetas en el chat**: Registra compras, ventas, recompras e identificaciones con el precio pagado.
+- **Lootable**: Allows players to open that body or chest by double-clicking the token on the canvas (within the configured proximity range).
+- **Require Death to Loot**: Configurable both globally and per actor instance; when enabled, players can only loot defeated NPCs (the GM can always inspect them).
+- **Auto Lootable on Death**: Optionally marks NPCs as lootable automatically as soon as they die.
+- **Interactive Containers**: Assign **closed** and **open** textures to chests, crates, or corpses so their canvas appearance updates automatically when opened or emptied.
+- **Manual Loot Actions**: Take individual items, *"Take All"*, *"Take All Currency"*, or *"Split Currency with Party"*.
 
 ---
 
-### 4. Creación Rápida de Botín en Escena
+### 3. Merchant System
 
-- El GM puede arrastrar cualquier **Ítem** desde la barra lateral o compendios directamente sobre el lienzo de la escena para crear automáticamente un token contenedor en esa posición con el objeto dentro.
+Turn any token or actor into a **Merchant** from its *Loot Settings*:
+
+- **Available Tabs**:
+  - **Buy**: Item catalog with search, category filter, sorting, buy price multiplier, stock controls (`+` / `-` and manual input), per-item visibility toggle (hide/show items from players), and Drag & Drop support for items and *Rollable Tables*.
+  - **Sell**: Players can sell items from their inventory using the merchant's sell multiplier.
+  - **Buyback**: Lets players repurchase items recently sold during the session.
+  - **Identify**: Players can request identification for unidentified items. The button switches to an animated **Pending** state while the GM receives an approval dialog showing both the unidentified item and its identified reference details to set a custom price and **Approve** or **Reject**.
+- **Custom Description**: The GM can edit the merchant's description; players only see a description once the GM saves a custom one.
+- **Chat Cards**: Logs purchases, sales, buybacks, and identifications with the price paid.
 
 ---
 
-### 5. Monedas Personalizadas y Formato de Descripciones
+### 4. Quick Canvas Loot Creation
 
-- **Monedas Personalizadas (*Custom Currencies*)**: Desde los ajustes del módulo, el GM puede crear divisas personalizadas con nombre, abreviatura, valor equivalente en cobre e ícono propio, integrándose con el reparto de botín y los mercaderes.
-- **Descripciones Enriquecidas**: Todas las ventanas de botín y mercaderes procesan las descripciones con `TextEditor.enrichHTML`, conservando **negritas**, *cursivas*, código `inline`, enlaces, tiradas e íconos/glifos nativos de PF2e y D&D 5e.
+- The GM can drag any **Item** from the sidebar or compendiums directly onto the canvas scene to automatically spawn a loot container token at the cursor's position with that item inside.
 
 ---
 
-## ⚙️ Configuración del Módulo
+### 5. Custom Currencies & Rich Item Descriptions
 
-En **Configuración del Juego → Ajustes del Módulo → Wow's Take a Loot**:
+- **Custom Currencies**: From module settings, the GM can create custom currencies with a name, abbreviation, copper conversion rate, and custom icon, integrated across loot distribution and merchants.
+- **Enriched Descriptions**: All loot and merchant windows process item descriptions through `TextEditor.enrichHTML`, preserving **bold**, *italic*, `inline` code, content links, inline rolls, and native PF2e/D&D 5e action icons/glyphs.
 
-| Ajuste | Descripción | Valor por defecto |
+---
+
+## ⚙️ Module Settings
+
+Under **Game Settings → Configure Settings → Wow's Take a Loot**:
+
+| Setting | Description | Default |
 | :--- | :--- | :--- |
-| **Auto Open on Combat End** | Abre automáticamente el GM Panel al finalizar un combate con enemigos. | `Activado` |
-| **Auto Lootable on Death** | Marca automáticamente a los NPCs como looteables al morir. | `Desactivado` |
-| **Proximity Distance** | Distancia máxima (en casillas de cuadrícula) para que los jugadores abran cuerpos o mercaderes. | `1.5` |
-| **Announce Rolls in Chat** | Publica en el chat los resultados de distribución, tiradas y transacciones. | `Activado` |
-| **Automatic Contested Rolls** | Si está activo, las disputas `d100` se tiran automáticamente; si no, se resuelven manualmente en el chat. | `Activado` |
-| **Require Death to Loot** | Exige que los NPCs estén muertos para que los jugadores puedan lootearlos (configurable por instancia). | `Activado` |
-| **Custom Currencies** *(Menú)* | Administrador para crear, editar o eliminar monedas personalizadas. | — |
-| **Report Bug** *(Menú)* | Abre un formulario para reportar errores directamente por correo. | — |
+| **Auto Open on Combat End** | Automatically opens the GM Panel when a combat with enemies ends. | `Enabled` |
+| **Auto Lootable on Death** | Automatically marks NPCs as lootable when they die. | `Disabled` |
+| **Proximity Distance** | Maximum distance (in grid squares) for players to open bodies or merchants. | `1.5` |
+| **Announce Rolls in Chat** | Posts distribution results, rolls, and merchant transactions to chat. | `Enabled` |
+| **Automatic Contested Rolls** | When enabled, `d100` contested rolls are automatic; otherwise resolved manually in chat. | `Enabled` |
+| **Require Death to Loot** | Requires NPCs to be dead before players can loot them (also configurable per instance). | `Enabled` |
+| **Custom Currencies** *(Menu)* | Manager to create, edit, or delete custom currencies. | — |
+| **Report Bug** *(Menu)* | Opens a form to send bug reports directly via email. | — |
 
 ---
 
-## 🧩 API Pública (Macros)
+## 🧩 Public API (Macros)
 
-El módulo expone una API en `game.modules.get("wow-take-a-loot").api`:
+The module exposes an API at `game.modules.get("wow-take-a-loot").api`:
 
 ```js
 const wowLooter = game.modules.get("wow-take-a-loot").api;
 
-// Abrir el GM Panel con una lista opcional de actores/tokens enemigos
+// Open the GM Panel with an optional list of enemy actors/tokens
 wowLooter.openGmLootApp(enemies);
 
-// Abrir la ventana de Loot Manual para un token objetivo
+// Open the Manual Loot window for a target token
 wowLooter.openManualLoot(targetToken);
 
-// Abrir la ventana de Mercader
+// Open the Merchant window
 wowLooter.openMerchantApp({ targetToken, lootingToken });
 
-// Abrir el gestor de Monedas Personalizadas
+// Open the Custom Currencies manager
 wowLooter.openCustomCurrenciesApp();
 ```
 
 ---
 
-## 📦 Estructura del Módulo
+## 📦 Module Structure
 
 ```text
 wow-take-a-loot/
-├── module.json                          # Manifiesto y compatibilidad (v12–v14)
-├── README.md                            # Documentación del módulo
+├── module.json                          # Manifest and compatibility (v12–v14)
+├── README.md                            # Module documentation
 ├── languages/
-│   ├── en.json                          # Traducción al inglés
-│   └── es.json                          # Traducción al español
+│   ├── en.json                          # English localization
+│   └── es.json                          # Spanish localization
 ├── styles/
-│   └── wow-looter.css                   # Estilos de ventanas, HUD y tarjetas de chat
+│   └── wow-looter.css                   # Window, HUD, and chat card styles
 ├── templates/
-│   ├── custom-currencies.hbs            # Plantilla de monedas personalizadas
-│   ├── gm-loot.hbs                      # Plantilla del GM Panel
-│   ├── loot-settings.hbs                # Plantilla de ajustes por instancia/token
-│   ├── manual-loot.hbs                  # Plantilla de loot manual
-│   ├── merchant.hbs                     # Plantilla del mercader
-│   ├── player-loot.hbs                  # Plantilla de selección de jugadores
-│   └── report-bug.hbs                   # Plantilla de reporte de errores
+│   ├── custom-currencies.hbs            # Custom currencies template
+│   ├── gm-loot.hbs                      # GM Panel template
+│   ├── loot-settings.hbs                # Per-instance/token settings template
+│   ├── manual-loot.hbs                  # Manual loot template
+│   ├── merchant.hbs                     # Merchant template
+│   ├── player-loot.hbs                  # Player loot selection template
+│   └── report-bug.hbs                   # Bug report template
 └── scripts/
-    ├── constants.js                     # IDs, flags, ajustes y eventos de socket
-    ├── module.js                        # Registro de ajustes, hooks y API pública
+    ├── constants.js                     # IDs, flags, settings, and socket events
+    ├── module.js                        # Settings registration, hooks, and public API
     ├── adapters/
-    │   ├── base-adapter.js              # Interfaz base para sistemas
-    │   ├── dnd5e-adapter.js             # Adaptador para D&D 5e
-    │   ├── pf2e-adapter.js              # Adaptador para Pathfinder 2e
-    │   └── index.js                     # Selector automático de adaptador
+    │   ├── base-adapter.js              # Base system adapter interface
+    │   ├── dnd5e-adapter.js             # D&D 5e adapter
+    │   ├── pf2e-adapter.js              # Pathfinder 2e adapter
+    │   └── index.js                     # Dynamic adapter selector
     ├── apps/
-    │   ├── custom-currencies-app.js     # Gestor de monedas personalizadas
-    │   ├── gm-loot-app.js               # Ventana principal de loot del GM
-    │   ├── loot-settings-app.js         # Ajustes por token/actor (looteable/mercader/cofre)
-    │   ├── manual-loot-app.js           # Ventana de loot manual por proximidad
-    │   ├── merchant-app.js              # Ventana de comercio (comprar/vender/identificar)
-    │   ├── player-loot-app.js           # Ventana sincronizada de botín para jugadores
-    │   └── report-bug-app.js            # Formulario de reporte de errores
+    │   ├── custom-currencies-app.js     # Custom currencies manager
+    │   ├── gm-loot-app.js               # GM loot panel application
+    │   ├── loot-settings-app.js         # Per-token/actor settings (lootable/merchant/chest)
+    │   ├── manual-loot-app.js           # Proximity manual loot window
+    │   ├── merchant-app.js              # Merchant window (buy/sell/buyback/identify)
+    │   ├── player-loot-app.js           # Synchronized player loot window
+    │   └── report-bug-app.js            # Bug report form
     ├── features/
-    │   ├── canvas-drop.js               # Soltar ítems en la escena para crear cofres
-    │   ├── combat-listener.js           # Detección de fin de combate
-    │   ├── death-listener.js            # Detección de muerte de NPCs
-    │   └── token-hud.js                 # Botón en Token HUD, doble clic y listeners socket
+    │   ├── canvas-drop.js               # Drop items onto canvas to spawn containers
+    │   ├── combat-listener.js           # Combat end detection
+    │   ├── death-listener.js            # NPC death detection
+    │   └── token-hud.js                 # Token HUD button, double-click, and socket listeners
     ├── services/
-    │   ├── chat-announcer.js            # Tarjetas de chat de loot y disputas
-    │   ├── currency-service.js          # Conversión y transferencia de divisas
-    │   ├── loot-session.js              # Ciclo de vida de sesión de botín y tiradas d100
-    │   ├── merchant-service.js          # Transacciones de mercader e identificación
-    │   └── socket-service.js            # Comunicación cliente-servidor por sockets
+    │   ├── chat-announcer.js            # Loot and contested roll chat cards
+    │   ├── currency-service.js          # Currency conversion and transfers
+    │   ├── loot-session.js              # Loot session lifecycle and d100 rolls
+    │   ├── merchant-service.js          # Merchant transactions and identification
+    │   └── socket-service.js            # Client-server socket communication
     └── utils/
-        ├── container-helpers.js         # Gestión de texturas abierto/cerrado en contenedores
-        └── dom-helpers.js               # Protección de dropdowns y enriquecimiento HTML
+        ├── container-helpers.js         # Open/closed container texture helpers
+        └── dom-helpers.js               # Dropdown protection and HTML enrichment
 ```
