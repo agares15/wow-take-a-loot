@@ -1,8 +1,8 @@
 {
   "id": "wow-take-a-loot",
   "title": "Wow's Take a Loot (PF2e & D&D 5e)",
-  "description": "Un gestor de loot con distribución en tiempo real, disputas con d100, interfaz de GM y jugadores, loot manual en tokens y creación rápida de cofres en escena para PF2e y D&D 5e.",
-  "version": "1.0.0",
+  "description": "A loot and merchant manager with real-time distribution, d100 contested rolls, GM and player panels, proximity manual looting, and quick canvas loot containers for PF2e and D&D 5e.",
+  "version": "0.8.1",
   "compatibility": {
     "minimum": "12",
     "verified": "14"
