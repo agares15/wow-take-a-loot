@@ -15,7 +15,7 @@ module.exports = async (req, res) => {
 
     // 2. Redirección a Patreon OAuth
     if (path === "/auth/login" && req.method === "GET") {
-      const state = crypto.randomUUID();
+      const state = signOAuthState(process.env.TOKEN_SIGNING_SECRET);
       const authUrl = new URL("https://www.patreon.com/oauth2/authorize");
       authUrl.searchParams.set("response_type", "code");
       authUrl.searchParams.set("client_id", process.env.PATREON_CLIENT_ID);
@@ -23,10 +23,6 @@ module.exports = async (req, res) => {
       authUrl.searchParams.set("scope", "identity identity.memberships");
       authUrl.searchParams.set("state", state);
 
-      res.setHeader(
-        "Set-Cookie",
-        `oauth_state=${state}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=600`
-      );
       res.writeHead(302, { Location: authUrl.toString() });
       return res.end();
     }
@@ -35,10 +31,14 @@ module.exports = async (req, res) => {
     if (path === "/auth/callback" && req.method === "GET") {
       const code = url.searchParams.get("code");
       const state = url.searchParams.get("state");
-      const cookieState = getCookie(req, "oauth_state");
 
-      if (!code || !state || state !== cookieState) {
-        return sendHtml(res, 400, renderErrorPage("Invalid OAuth state. Please try again."));
+      if (!code) {
+        res.writeHead(302, { Location: `${origin}/` });
+        return res.end();
+      }
+
+      if (!verifyOAuthState(state, process.env.TOKEN_SIGNING_SECRET)) {
+        return sendHtml(res, 400, renderErrorPage("Invalid or expired OAuth state. Please try again."));
       }
 
       const tokenRes = await fetch("https://www.patreon.com/api/oauth2/token", {
@@ -193,6 +193,24 @@ async function isMemberStillActive(memberId) {
 
   const json = await res.json();
   return matchesMembership(json?.data);
+}
+
+function signOAuthState(secret) {
+  const payload = `${crypto.randomUUID()}.${Date.now()}`;
+  const sig = crypto.createHmac("sha256", secret).update(payload).digest("base64url");
+  return `${payload}.${sig}`;
+}
+
+function verifyOAuthState(state, secret) {
+  const parts = String(state || "").split(".");
+  if (parts.length !== 3) return false;
+  const [nonce, tsStr, sig] = parts;
+  const payload = `${nonce}.${tsStr}`;
+  const expected = crypto.createHmac("sha256", secret).update(payload).digest("base64url");
+  if (sig.length !== expected.length) return false;
+  if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return false;
+  const ageMs = Date.now() - Number(tsStr);
+  return Number.isFinite(ageMs) && ageMs >= 0 && ageMs <= 10 * 60 * 1000;
 }
 
 function signMemberToken(memberId, secret) {
