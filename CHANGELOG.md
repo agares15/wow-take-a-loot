@@ -8,6 +8,8 @@ All notable changes to **Wow's Take a Loot** will be documented in this file.
 - **Manual Loot — Player Access on `loot` and `container` Tokens:** Wrapped `Token.prototype._canView` (and updated `mouseInteractionManager.permissions.clickLeft2`) for visible lootable tokens so players can double-click and open **Manual Loot** even when the underlying Actor has `NONE` ownership.
 - **Manual Loot — GM Currency Editing:** Fixed an `ApplicationV2` `data-action` click conflict on the currency `<input>` fields that caused them to lose focus on mouseup.
 - **Manual Loot — Header Avatar Sizing:** Added explicit `46×46` dimensions on the avatar element to prevent oversized rendering when a client has stale cached CSS.
+- **Manual Loot — Drag & Drop Duplicate Items:** Guarded `_attachDropHandler` against binding duplicate `drop` listeners across re-renders (plus an in-flight drop lock).
+- **Manual Loot — Items List Overflow & Scrolling:** Added `flex-shrink: 0` on `.manual-item-row` and `overflow-x: hidden; overflow-y: auto;` on `.manual-loot-list` so overflowing items scroll cleanly instead of overlapping.
 - **GM Loot Panel — Missing Ammunition:** Added `ammo` (and `backpack` for 5e) to the lootable item types in the PF2e and D&D 5e adapters so arrows and ammunition appear in the **Loot Pool**.
 - **Merchant — "Your Funds" Custom Currencies:** Updated `MerchantApp` to resolve currency icons and abbreviations via `currencyService.getCurrencyMetadata` instead of falling back to the default GP icon.
 

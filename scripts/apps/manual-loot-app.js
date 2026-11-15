@@ -416,6 +416,9 @@ export class ManualLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
    */
   _attachDropHandler() {
     const html = this.element;
+    if (!html || html.dataset.wowDropBound === "true") return;
+    html.dataset.wowDropBound = "true";
+
     html.addEventListener("dragover", (ev) => {
       ev.preventDefault();
       ev.dataTransfer.dropEffect = "copy";
@@ -423,34 +426,41 @@ export class ManualLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     html.addEventListener("drop", async (ev) => {
       ev.preventDefault();
-      let dragData;
+      ev.stopPropagation();
+      if (this._isProcessingDrop) return;
+      this._isProcessingDrop = true;
       try {
-        dragData = TextEditor.getDragEventData(ev);
-      } catch (err) {
-        return;
+        let dragData;
+        try {
+          dragData = TextEditor.getDragEventData(ev);
+        } catch (err) {
+          return;
+        }
+        if (dragData?.type !== "Item" || !dragData.uuid) return;
+
+        const item = await fromUuid(dragData.uuid);
+        if (!item) return;
+
+        const source = this.targetToken?.actor || this.targetActor;
+        if (!source) return;
+
+        const itemData = item.toObject();
+        delete itemData._id;
+        delete itemData._stats;
+        if (itemData.system?.containerId) itemData.system.containerId = null;
+
+        await source.createEmbeddedDocuments("Item", [itemData]);
+        ui.notifications.info(`${item.name} añadido al botín.`);
+
+        // Notificar por socket y refrescar
+        socketService.emit(SOCKET_EVENTS.MANUAL_LOOT_UPDATED, {
+          targetActorId: source.id,
+          targetTokenId: this.targetToken?.id
+        });
+        this.render(false);
+      } finally {
+        this._isProcessingDrop = false;
       }
-      if (dragData?.type !== "Item" || !dragData.uuid) return;
-
-      const item = await fromUuid(dragData.uuid);
-      if (!item) return;
-
-      const source = this.targetToken?.actor || this.targetActor;
-      if (!source) return;
-
-      const itemData = item.toObject();
-      delete itemData._id;
-      delete itemData._stats;
-      if (itemData.system?.containerId) itemData.system.containerId = null;
-
-      await source.createEmbeddedDocuments("Item", [itemData]);
-      ui.notifications.info(`${item.name} añadido al botín.`);
-
-      // Notificar por socket y refrescar
-      socketService.emit(SOCKET_EVENTS.MANUAL_LOOT_UPDATED, {
-        targetActorId: source.id,
-        targetTokenId: this.targetToken?.id
-      });
-      this.render(false);
     });
   }
 

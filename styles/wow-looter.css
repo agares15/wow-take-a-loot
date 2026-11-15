@@ -1748,11 +1748,16 @@ body.wow-looter-system-dnd5e {
 }
 
 /* Items List & Rows */
+.wow-looter-manual-app .items-manual-box {
+  overflow: hidden;
+}
+
 .wow-looter-manual-app .manual-loot-list {
   list-style: none;
   margin: 0;
   padding: 0;
   max-height: 280px;
+  overflow-x: hidden;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -1762,6 +1767,7 @@ body.wow-looter-system-dnd5e {
 .wow-looter-manual-app .manual-item-row {
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
   padding: 0;
   background: transparent;
   border: none;
