@@ -368,8 +368,19 @@ export function _wrapTokenDoubleClick() {
     const proto = TokenClass.prototype;
     if (!proto || proto._wowLooterClickWrapped) continue;
 
+    const originalCanView = proto._canView;
     const originalOnClickLeft2 = proto._onClickLeft2;
     proto._wowLooterClickWrapped = true;
+
+    proto._canView = function (user, event) {
+      if (!this.document?.hidden && _isTokenMarkedLootable(this)) {
+        return true;
+      }
+      if (originalCanView) {
+        return originalCanView.apply(this, arguments);
+      }
+      return false;
+    };
 
     proto._onClickLeft2 = function (event) {
       const isLootable = _isTokenMarkedLootable(this);
@@ -385,8 +396,11 @@ export function _wrapTokenDoubleClick() {
     };
   }
 
-  // Si ya hay tokens dibujados en el canvas (ej. cuando ready corre después de canvasReady), actualizar su callback
+  // Si ya hay tokens dibujados en el canvas (ej. cuando ready corre después de canvasReady), actualizar su callback y permiso
   for (const token of canvas?.tokens?.placeables || []) {
+    if (token.mouseInteractionManager?.permissions) {
+      token.mouseInteractionManager.permissions.clickLeft2 = token._canView.bind(token);
+    }
     if (token.mouseInteractionManager?.callbacks) {
       token.mouseInteractionManager.callbacks.clickLeft2 = token._onClickLeft2.bind(token);
     }

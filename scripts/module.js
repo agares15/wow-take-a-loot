@@ -70,7 +70,7 @@ Hooks.once("init", () => {
     scope: "world",
     config: true,
     type: Boolean,
-    default: true
+    default: false
   });
 
   // Menú y configuración para Monedas Personalizadas
@@ -128,7 +128,7 @@ Hooks.once("ready", () => {
 
   // Exponer API pública en `game.modules`
   game.modules.get(MODULE_ID).api = {
-    openGmLootApp: (enemies = []) => new GmLootApp({ initialEnemies: enemies }).render(true),
+    openGmLootApp: (enemies = [], players = undefined) => new GmLootApp({ initialEnemies: enemies, initialPlayers: players }).render(true),
     openPlayerLootApp: (session) => PlayerLootApp.open(session || lootSessionManager.session),
     openManualLoot: (targetToken) => _tryOpenManualLoot(targetToken),
     openMerchantApp: (options = {}) => new MerchantApp(options).render(true),

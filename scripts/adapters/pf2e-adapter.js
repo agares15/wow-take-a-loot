@@ -8,6 +8,7 @@ const PHYSICAL_ITEM_TYPES = new Set([
   "shield",
   "equipment",
   "consumable",
+  "ammo",
   "treasure",
   "backpack",
   "book",
@@ -477,6 +478,7 @@ export class PF2eAdapter extends BaseSystemAdapter {
     if (type === "weapon") return "Weapons";
     if (type === "armor" || type === "shield") return "Armor";
     if (type === "consumable") return "Consumables";
+    if (type === "ammo") return "Ammunition";
     if (type === "equipment") return "Equipment";
     if (type === "backpack") return "Containers";
     if (type === "treasure") return "Treasure";

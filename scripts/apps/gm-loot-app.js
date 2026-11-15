@@ -21,7 +21,7 @@ export class GmLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
     this.excludedItemIds = new Set(); // Items de enemigos que el GM decidió remover individualmente
 
     this._initializeEnemies(options.initialEnemies || []);
-    this._initializePlayers();
+    this._initializePlayers(options.initialPlayers);
   }
 
   static DEFAULT_OPTIONS = {
@@ -85,33 +85,72 @@ export class GmLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   /**
-   * Carga los personajes jugables disponibles en el mundo.
+   * Busca el usuario jugador propietario o asignado al actor.
    */
-  _initializePlayers() {
+  static findPlayerOwner(actor) {
+    if (!actor) return null;
+    return game.users.find(
+      (u) => !u.isGM && (u.character?.id === actor.id || actor.getUserLevel(u) >= CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER)
+    ) || null;
+  }
+
+  /**
+   * Verifica si un actor es un personaje jugable perteneciente a algún jugador.
+   */
+  static isPlayerOwnedCharacter(actor, adapter = getSystemAdapter()) {
+    if (!actor || !adapter.isPlayerCharacter(actor)) return false;
+    return actor.hasPlayerOwner || Boolean(GmLootApp.findPlayerOwner(actor));
+  }
+
+  /**
+   * Construye la entrada de jugador para la lista de Player Characters.
+   */
+  _buildPlayerEntry(pc, tokenDoc = null) {
+    const ownerUser = GmLootApp.findPlayerOwner(pc);
+    const activeToken = tokenDoc || canvas?.tokens?.placeables?.find((t) => t.actor?.id === pc.id);
+    const tokenTex = activeToken?.document?.texture || activeToken?.texture || pc.prototypeToken?.texture;
+    const tokenImg = tokenTex?.src || pc.img;
+
+    return {
+      userId: ownerUser ? ownerUser.id : null,
+      userName: ownerUser ? ownerUser.name : "Party",
+      characterId: pc.id,
+      characterName: pc.name,
+      characterImg: tokenImg,
+      scaleX: tokenTex?.scaleX ?? 1,
+      scaleY: tokenTex?.scaleY ?? 1,
+      selected: true
+    };
+  }
+
+  /**
+   * Carga los personajes jugables iniciales (los participantes del combate, o todos si se abre manualmente).
+   */
+  _initializePlayers(initialPlayers) {
     const list = [];
+    const seenIds = new Set();
     const adapter = getSystemAdapter();
-    const pcs = game.actors.filter((a) => adapter.isPlayerCharacter(a));
 
-    for (const pc of pcs) {
-      // Buscar el usuario jugador que es dueño del personaje o que lo tiene asignado
-      const ownerUser = game.users.find(
-        (u) => !u.isGM && (u.character?.id === pc.id || pc.getUserLevel(u) >= CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER)
-      );
+    if (Array.isArray(initialPlayers)) {
+      for (const entry of initialPlayers) {
+        if (!entry) continue;
+        const pc = entry.actor || entry;
+        if (!pc || seenIds.has(pc.id)) continue;
+        if (!GmLootApp.isPlayerOwnedCharacter(pc, adapter)) continue;
 
-      const activeToken = canvas?.tokens?.placeables?.find((t) => t.actor?.id === pc.id);
-      const tokenTex = activeToken?.document?.texture || pc.prototypeToken?.texture;
-      const tokenImg = tokenTex?.src || pc.img;
-
-      list.push({
-        userId: ownerUser ? ownerUser.id : null,
-        userName: ownerUser ? ownerUser.name : "Party",
-        characterId: pc.id,
-        characterName: pc.name,
-        characterImg: tokenImg,
-        scaleX: tokenTex?.scaleX ?? 1,
-        scaleY: tokenTex?.scaleY ?? 1,
-        selected: true
-      });
+        seenIds.add(pc.id);
+        const tokenDoc = entry.documentName === "Token"
+          ? entry
+          : (entry.document?.documentName === "Token" ? entry.document : null);
+        list.push(this._buildPlayerEntry(pc, tokenDoc));
+      }
+    } else {
+      const pcs = game.actors.filter((a) => GmLootApp.isPlayerOwnedCharacter(a, adapter));
+      for (const pc of pcs) {
+        if (seenIds.has(pc.id)) continue;
+        seenIds.add(pc.id);
+        list.push(this._buildPlayerEntry(pc));
+      }
     }
 
     this.players = list;
@@ -326,6 +365,7 @@ export class GmLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
    */
   async _onDrop(event) {
     event.preventDefault();
+    event.stopPropagation();
     let data;
     try {
       data = JSON.parse(event.dataTransfer.getData("text/plain"));
@@ -335,6 +375,14 @@ export class GmLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     if (!data || !data.type) return;
 
+    const dropType = event.currentTarget?.dataset?.dropType;
+    if (dropType === "player") {
+      if (data.type === "Actor") {
+        await this._handlePlayerDrop(data);
+      }
+      return;
+    }
+
     if (data.type === "Actor") {
       await this._handleActorDrop(data);
     } else if (data.type === "Item") {
@@ -342,6 +390,36 @@ export class GmLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
     } else if (data.type === "RollTable") {
       await this._handleRollTableDrop(data);
     }
+  }
+
+  /**
+   * Procesa el arrastre de un personaje jugador al panel de Player Characters.
+   */
+  async _handlePlayerDrop(data) {
+    const doc = await fromUuid(data.uuid);
+    if (!doc) return;
+    const actor = doc.actor || doc;
+    if (!actor) return;
+
+    if (!GmLootApp.isPlayerOwnedCharacter(actor)) {
+      ui.notifications.warn(game.i18n.localize("WOW_LOOTER.Warning.NotAPlayerCharacter"));
+      return;
+    }
+
+    const existing = this.players.find((p) => p.characterId === actor.id);
+    if (existing) {
+      if (!existing.selected) {
+        existing.selected = true;
+        this.render(true);
+      }
+      return;
+    }
+
+    const tokenDoc = doc.documentName === "Token"
+      ? doc
+      : (doc.document?.documentName === "Token" ? doc.document : null);
+    this.players.push(this._buildPlayerEntry(actor, tokenDoc));
+    this.render(true);
   }
 
   /**

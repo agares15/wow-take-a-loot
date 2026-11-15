@@ -13,6 +13,7 @@
 
   <div class="custom-currencies-list-container">
     <h3>{{localize "WOW_LOOTER.CustomCurrencies.RegisteredList"}}</h3>
+    <p class="custom-currency-abbr-hint">{{localize "WOW_LOOTER.CustomCurrencies.AbbrHint"}}</p>
     <ul class="custom-currencies-list">
       {{#each customCurrencies}}
       <li class="custom-currency-row" data-index="{{@index}}">
@@ -20,6 +21,10 @@
         <div class="custom-currency-info">
           <span class="custom-currency-name">{{this.name}}</span>
           <span class="custom-currency-key"><code>{{this.key}}</code></span>
+        </div>
+        <div class="custom-currency-abbr-field">
+          <label class="custom-currency-abbr-label">{{localize "WOW_LOOTER.CustomCurrencies.AbbrLabel"}}</label>
+          <input type="text" class="custom-currency-abbr-input" maxlength="4" value="{{this.abbr}}" placeholder="{{localize 'WOW_LOOTER.CustomCurrencies.AbbrPlaceholder'}}" data-index="{{@index}}" title="{{localize 'WOW_LOOTER.CustomCurrencies.AbbrHint'}}" />
         </div>
         <button type="button" class="btn-icon danger btn-delete-currency" data-action="remove-currency" data-index="{{@index}}" title="{{localize 'WOW_LOOTER.Common.Delete'}}">
           <i class="fas fa-trash"></i>

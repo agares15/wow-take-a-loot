@@ -54,7 +54,7 @@ export class Dnd5eAdapter extends BaseSystemAdapter {
 
   getLootableItems(actor) {
     if (!actor) return [];
-    const validTypes = new Set(["weapon", "equipment", "consumable", "tool", "loot", "container"]);
+    const validTypes = new Set(["weapon", "equipment", "consumable", "tool", "loot", "container", "backpack", "ammo"]);
     return actor.items.filter((item) => {
       // Filtrar items no físicos o ataques naturales sin valor de inventario
       if (!validTypes.has(item.type)) return false;
@@ -203,7 +203,8 @@ export class Dnd5eAdapter extends BaseSystemAdapter {
     const type = (item?.type || "").toLowerCase();
     if (type === "weapon") return "Weapons";
     if (type === "consumable") return "Consumables";
-    if (type === "container") return "Containers";
+    if (type === "ammo") return "Ammunition";
+    if (type === "container" || type === "backpack") return "Containers";
     if (type === "loot") return "Treasure";
     if (type === "equipment") {
       const armorType = item.system?.armor?.type || item.system?.type?.value;

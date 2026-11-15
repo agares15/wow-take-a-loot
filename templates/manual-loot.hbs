@@ -2,7 +2,9 @@
   <header class="looter-header">
     <div class="target-profile-container">
       <div class="target-profile">
-        <img src="{{targetImg}}" alt="{{targetName}}" class="target-avatar" />
+        <span class="target-avatar-wrap" style="width: 46px; height: 46px; flex-shrink: 0;">
+          <img src="{{targetImg}}" alt="{{targetName}}" class="target-avatar-img" width="46" height="46" data-scale-x="{{targetScaleX}}" data-scale-y="{{targetScaleY}}" style="width: 46px; height: 46px; object-fit: contain; transform: scale({{targetScaleX}}, {{targetScaleY}});" />
+        </span>
         <div class="target-info">
           <h2>{{targetName}}</h2>
           <span class="badge lootable-badge">
@@ -58,7 +60,7 @@
         <div class="currency-pill {{this.key}} {{#if ../isGM}}editable{{/if}}">
           <img src="{{this.img}}" alt="{{this.label}}" class="currency-coin-icon" />
           {{#if ../isGM}}
-            <input type="number" class="coin-input num-box" data-action="edit-currency" data-currency="{{this.key}}" value="{{this.value}}" min="0" title="{{localize 'WOW_LOOTER.GM.EditCurrency'}}" />
+            <input type="number" class="coin-input num-box" data-currency="{{this.key}}" value="{{this.value}}" min="0" title="{{localize 'WOW_LOOTER.GM.EditCurrency'}}" />
           {{else}}
             <span class="coin-qty-label">{{this.value}}</span>
           {{/if}}

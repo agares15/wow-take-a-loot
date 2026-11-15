@@ -22,7 +22,7 @@ export class CurrencyService {
    * @param {Item|object} item 
    * @returns {Promise<object|null>}
    */
-  static async addCustomCurrency(item) {
+  static async addCustomCurrency(item, abbr = "") {
     if (!item) return null;
     const list = [...this.getCustomCurrencies()];
     const key = (item.slug || item.system?.slug || item.name || "custom-coin")
@@ -33,10 +33,13 @@ export class CurrencyService {
     const alreadyExists = list.some((c) => c.key === key || c.name.toLowerCase() === item.name.toLowerCase());
     if (alreadyExists) return null;
 
+    const cleanAbbr = String(abbr || "").trim().slice(0, 4);
+
     const entry = {
       id: item.id || foundry.utils.randomID(),
       uuid: item.uuid || "",
       name: item.name,
+      abbr: cleanAbbr,
       img: item.img || "icons/commodities/currency/coins-gold.webp",
       key,
       type: item.type || (game.system.id === "pf2e" ? "treasure" : "loot"),
@@ -46,6 +49,20 @@ export class CurrencyService {
     list.push(entry);
     await game.settings.set(MODULE_ID, SETTINGS.CUSTOM_CURRENCIES, list);
     return entry;
+  }
+
+  /**
+   * Actualiza la abreviación (máx. 4 caracteres) de una moneda personalizada registrada.
+   * @param {number} index
+   * @param {string} abbr
+   */
+  static async updateCustomCurrencyAbbr(index, abbr) {
+    const list = [...this.getCustomCurrencies()];
+    if (index < 0 || index >= list.length) return null;
+    const cleanAbbr = String(abbr || "").trim().slice(0, 4);
+    list[index] = { ...list[index], abbr: cleanAbbr };
+    await game.settings.set(MODULE_ID, SETTINGS.CUSTOM_CURRENCIES, list);
+    return list[index];
   }
 
   /**
@@ -110,7 +127,7 @@ export class CurrencyService {
     if (custom) {
       return {
         key: custom.key,
-        label: custom.name,
+        label: custom.abbr || custom.name,
         img: custom.img || "icons/commodities/currency/coins-gold.webp",
         isCustom: true
       };

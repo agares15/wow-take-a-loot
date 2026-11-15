@@ -1,8 +1,8 @@
 {
   "id": "wow-take-a-loot",
-  "title": "Wow's Take a Loot (PF2e & D&D 5e)",
+  "title": "Wow's Take a Loot",
   "description": "A loot and merchant manager with real-time distribution, d100 contested rolls, GM and player panels, proximity manual looting, and quick canvas loot containers for PF2e and D&D 5e.",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "compatibility": {
     "minimum": "12",
     "verified": "14"
@@ -50,6 +50,6 @@
     }
   ],
   "url": "https://github.com/agares15/wow-take-a-loot",
-  "manifest": "https://github.com/agares15/wow-take-a-loot/releases/download/0.8.1/module.json",
-  "download": "https://github.com/agares15/wow-take-a-loot/releases/download/0.8.1/wow-take-a-loot.zip"
+  "manifest": "https://github.com/agares15/wow-take-a-loot/releases/download/0.8.2/module.json",
+  "download": "https://github.com/agares15/wow-take-a-loot/releases/download/0.8.2/wow-take-a-loot.zip"
 }

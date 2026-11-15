@@ -15,6 +15,7 @@ const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
  */
 export class ManualLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
   static activeInstance = null;
+  static _avatarBoundsCache = new Map();
 
   constructor(options = {}) {
     super(options);
@@ -90,7 +91,6 @@ export class ManualLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
       "split-currency-party": ManualLootApp._onSplitCurrencyParty,
       "open-loot-settings": ManualLootApp._onOpenLootSettings,
       "open-actor-sheet": ManualLootApp._onOpenActorSheet,
-      "edit-currency": ManualLootApp._onEditCurrency,
       "toggle-item-desc": ManualLootApp._onToggleItemDesc,
       "close": ManualLootApp._onClose
     }
@@ -172,12 +172,22 @@ export class ManualLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
       || source?.getFlag?.(MODULE_ID, "lootSettings") 
       || {};
 
+    const tokenTex = this.targetToken?.document?.texture
+      || this.targetToken?.texture
+      || source?.token?.texture
+      || source?.prototypeToken?.texture;
+    const targetImg = tokenTex?.src || source?.img || "icons/containers/bags/pack-leather-brown.webp";
+    const targetScaleX = tokenTex?.scaleX ?? 1;
+    const targetScaleY = tokenTex?.scaleY ?? 1;
+
     return {
       isGM: game.user.isGM,
       isLootActor,
       customDescription: lootSettings.customDescription || "",
-      targetName: source?.name || game.i18n.localize("WOW_LOOTER.Manual.LootContainer"),
-      targetImg: source?.img || "icons/containers/bags/pack-leather-brown.webp",
+      targetName: this.targetToken?.name || source?.name || game.i18n.localize("WOW_LOOTER.Manual.LootContainer"),
+      targetImg,
+      targetScaleX,
+      targetScaleY,
       lootingActorName: destination?.name || game.i18n.localize("WOW_LOOTER.Manual.NoLooterSelected"),
       lootingActorId: destination?.id,
       looterOptions,
@@ -189,12 +199,104 @@ export class ManualLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   /**
+   * Analiza los píxeles no transparentes de la imagen del token y ajusta la escala
+   * para recortar automáticamente márgenes vacíos hasta tocar los bordes del contenedor.
+   */
+  _fitAvatarToContent(img, baseScaleX = 1, baseScaleY = 1) {
+    const applyFit = ({ autoScale, offsetX, offsetY }) => {
+      const signX = baseScaleX < 0 ? -1 : 1;
+      const signY = baseScaleY < 0 ? -1 : 1;
+      const scaleX = signX * autoScale;
+      const scaleY = signY * autoScale;
+      img.style.transform = `scale(${scaleX}, ${scaleY}) translate(${offsetX}%, ${offsetY}%)`;
+    };
+
+    const computeAndApply = () => {
+      const src = img.currentSrc || img.src;
+      if (!src || !img.naturalWidth || !img.naturalHeight) return;
+
+      const cached = ManualLootApp._avatarBoundsCache.get(src);
+      if (cached) {
+        applyFit(cached);
+        return;
+      }
+
+      try {
+        const maxDim = 128;
+        const ratio = Math.min(1, maxDim / Math.max(img.naturalWidth, img.naturalHeight));
+        const w = Math.max(1, Math.round(img.naturalWidth * ratio));
+        const h = Math.max(1, Math.round(img.naturalHeight * ratio));
+
+        const canvasEl = document.createElement("canvas");
+        canvasEl.width = w;
+        canvasEl.height = h;
+        const ctx = canvasEl.getContext("2d", { willReadFrequently: true });
+        if (!ctx) return;
+
+        ctx.drawImage(img, 0, 0, w, h);
+        const { data } = ctx.getImageData(0, 0, w, h);
+
+        let minX = w, minY = h, maxX = -1, maxY = -1;
+        for (let y = 0; y < h; y++) {
+          for (let x = 0; x < w; x++) {
+            const alpha = data[(y * w + x) * 4 + 3];
+            if (alpha > 10) {
+              if (x < minX) minX = x;
+              if (x > maxX) maxX = x;
+              if (y < minY) minY = y;
+              if (y > maxY) maxY = y;
+            }
+          }
+        }
+
+        if (maxX < minX || maxY < minY) return;
+
+        const contentW = (maxX - minX + 1) / w;
+        const contentH = (maxY - minY + 1) / h;
+        const maxNat = Math.max(img.naturalWidth, img.naturalHeight);
+        const normW = img.naturalWidth / maxNat;
+        const normH = img.naturalHeight / maxNat;
+        const boxW = contentW * normW;
+        const boxH = contentH * normH;
+
+        // Escalar para que los píxeles visibles cubran el contenedor hasta sus bordes sin hacer overflow
+        const autoScale = Math.min(4, Math.max(1, 1 / Math.max(boxW, boxH)));
+        const centerX = ((minX + maxX) / 2) / w - 0.5;
+        const centerY = ((minY + maxY) / 2) / h - 0.5;
+        const result = {
+          autoScale,
+          offsetX: -(centerX * normW * 100),
+          offsetY: -(centerY * normH * 100)
+        };
+
+        ManualLootApp._avatarBoundsCache.set(src, result);
+        applyFit(result);
+      } catch {
+        // Si la imagen es cross-origin sin CORS, mantener la escala del token
+      }
+    };
+
+    if (img.complete && img.naturalWidth > 0) {
+      computeAndApply();
+    } else {
+      img.addEventListener("load", computeAndApply, { once: true });
+    }
+  }
+
+  /**
    * Conecta los listeners del DOM tras renderizar.
    */
   _onRender(context, options) {
     super._onRender(context, options);
     const html = this.element;
     protectDropdowns(html);
+
+    const avatarImg = html.querySelector(".target-avatar-img");
+    if (avatarImg) {
+      const baseScaleX = Number(avatarImg.dataset.scaleX ?? 1) || 1;
+      const baseScaleY = Number(avatarImg.dataset.scaleY ?? 1) || 1;
+      this._fitAvatarToContent(avatarImg, baseScaleX, baseScaleY);
+    }
 
     // Selector de destinatario del botín (evento change)
     const looterSelect = html.querySelector(".looter-select");
@@ -293,7 +395,7 @@ export class ManualLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
     });
 
     // Edición de monedas en vivo por parte del GM
-    html.querySelectorAll("input[data-action='edit-currency']").forEach((input) => {
+    html.querySelectorAll("input.coin-input[data-currency]").forEach((input) => {
       input.addEventListener("change", (ev) => {
         ManualLootApp._onEditCurrency.call(this, ev, ev.target);
       });

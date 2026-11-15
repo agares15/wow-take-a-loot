@@ -225,11 +225,11 @@ export class BaseSystemAdapter {
 
     const actorSettings = actor?.getFlag?.(MODULE_ID, "lootSettings") || {};
     const tokenSettings = tokenDoc?.getFlag?.(MODULE_ID, "lootSettings") || {};
-    let globalRequireDeath = true;
+    let globalRequireDeath = false;
     try {
       globalRequireDeath = game.settings.get(MODULE_ID, SETTINGS.REQUIRE_DEATH_TO_LOOT);
     } catch {
-      globalRequireDeath = true;
+      globalRequireDeath = false;
     }
 
     const requireDeath = tokenSettings.requireDeathToLoot

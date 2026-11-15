@@ -119,11 +119,14 @@ export class MerchantApp extends HandlebarsApplicationMixin(ApplicationV2) {
     // Fondos del comprador
     const shopperCurrenciesRaw = shopper ? currencyService.getActorCurrencies(shopper) : {};
     const shopperTotalCopper = shopper ? currencyService.getActorTotalCopper(shopper) : 0;
-    const shopperCurrenciesList = Object.entries(shopperCurrenciesRaw).map(([key, value]) => ({
-      key: key.toUpperCase(),
-      amount: value,
-      icon: adapter.getCurrencyImage(key)
-    }));
+    const shopperCurrenciesList = Object.entries(shopperCurrenciesRaw).map(([key, value]) => {
+      const meta = currencyService.getCurrencyMetadata(key);
+      return {
+        key: meta.label,
+        amount: value,
+        icon: meta.img
+      };
+    });
 
     // 2. Configuración del Mercader
     const lootSettings = source?.getFlag?.(MODULE_ID, "lootSettings") || {};

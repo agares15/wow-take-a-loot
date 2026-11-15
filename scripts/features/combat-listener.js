@@ -25,9 +25,10 @@ export function registerCombatListener() {
       return;
     }
 
-    // Recoger solo los enemigos con denominación "opposition"
+    // Recoger los enemigos con denominación "opposition" y los personajes jugadores que participaron en el combate
     const adapter = getSystemAdapter();
     const defeatedEnemies = [];
+    const combatPlayers = [];
 
     if (combat.combatants && combat.combatants.size > 0) {
       for (const combatant of combat.combatants) {
@@ -38,16 +39,18 @@ export function registerCombatListener() {
         const isOpposition = adapter.isOpposition(combatant) || adapter.isOpposition(actor);
         if (isOpposition) {
           defeatedEnemies.push(combatant.token || actor);
+        } else if (GmLootApp.isPlayerOwnedCharacter(actor, adapter)) {
+          combatPlayers.push(combatant.token || actor);
         }
       }
     }
 
-    console.log(`[wow-looter] Enemigos con denominación 'opposition' encontrados: ${defeatedEnemies.length}`);
+    console.log(`[wow-looter] Enemigos con denominación 'opposition' encontrados: ${defeatedEnemies.length}, PJs en combate: ${combatPlayers.length}`);
 
     // Si hubo enemigos en la batalla, abrir la ventana del GM incluso si aún no tienen items
     // (para que el GM pueda ver el panel, añadir tablas, items o confirmar).
     if (defeatedEnemies.length > 0) {
-      new GmLootApp({ initialEnemies: defeatedEnemies }).render(true);
+      new GmLootApp({ initialEnemies: defeatedEnemies, initialPlayers: combatPlayers }).render(true);
     } else {
       console.log("[wow-looter] No se encontraron combatientes enemigos en este encuentro.");
     }

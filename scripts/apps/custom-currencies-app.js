@@ -41,6 +41,24 @@ export class CustomCurrenciesApp extends HandlebarsApplicationMixin(ApplicationV
 
   _onRender(context, options) {
     super._onRender(context, options);
+
+    // Manejador de edición de abreviación (máximo 4 caracteres)
+    this.element.querySelectorAll(".custom-currency-abbr-input").forEach((input) => {
+      input.addEventListener("input", (ev) => {
+        if (ev.target.value.length > 4) {
+          ev.target.value = ev.target.value.slice(0, 4);
+        }
+      });
+
+      input.addEventListener("change", async (ev) => {
+        const idx = Number(ev.target.dataset.index);
+        if (isNaN(idx)) return;
+        const cleanAbbr = ev.target.value.trim().slice(0, 4);
+        ev.target.value = cleanAbbr;
+        await currencyService.updateCustomCurrencyAbbr(idx, cleanAbbr);
+      });
+    });
+
     const dropZone = this.element.querySelector(".currency-drop-zone");
     if (!dropZone) return;
 
@@ -72,7 +90,10 @@ export class CustomCurrenciesApp extends HandlebarsApplicationMixin(ApplicationV
         const result = await currencyService.addCustomCurrency(item);
         if (result) {
           ui.notifications.info(`${game.i18n.localize("WOW_LOOTER.CustomCurrencies.Added")}: ${result.name}`);
-          this.render(false);
+          await this.render(false);
+          const inputs = this.element?.querySelectorAll(".custom-currency-abbr-input");
+          const lastInput = inputs?.[inputs.length - 1];
+          lastInput?.focus();
         } else {
           ui.notifications.warn(game.i18n.localize("WOW_LOOTER.CustomCurrencies.AlreadyExists"));
         }

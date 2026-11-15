@@ -38,7 +38,7 @@
       </div>
 
       <!-- Panel 2: Player Characters -->
-      <div class="looter-box players-box">
+      <div class="looter-box players-box drop-target" data-drop-type="player">
         <div class="box-header">
           <h3><i class="fas fa-users"></i> {{localize "WOW_LOOTER.GM.EligiblePlayers"}}</h3>
           <span class="badge counter-badge">{{players.length}}</span>
@@ -110,7 +110,7 @@
               </div>
               <ul class="loot-items-list">
                 {{#each this.items}}
-                <li class="loot-item-entry pool-item-card" data-item-id="{{this.id}}">
+                <li class="loot-item-entry pool-item-card" data-item-id="{{this.id}}" {{#if this.sourceName}}title="{{localize 'WOW_LOOTER.GM.FromSource' source=this.sourceName}}"{{/if}}>
                   <div class="item-main-row">
                     <img src="{{this.img}}" alt="{{this.name}}" class="item-img" data-action="toggle-item-desc" />
                     <div class="item-details" data-action="toggle-item-desc">
