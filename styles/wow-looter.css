@@ -1032,11 +1032,13 @@ body.wow-looter-system-dnd5e {
   border: 1px solid #2d384d !important;
   color: #f8fafc !important;
   border-radius: 4px !important;
+  appearance: textfield !important;
   -moz-appearance: textfield !important;
 }
 
 .wow-looter-app .player-claim-qty-input::-webkit-outer-spin-button,
 .wow-looter-app .player-claim-qty-input::-webkit-inner-spin-button {
+  appearance: none;
   -webkit-appearance: none;
   margin: 0;
 }
@@ -1094,6 +1096,7 @@ body.wow-looter-system-dnd5e {
   border: 1px solid #2d384d !important;
   border-radius: 3px !important;
   color: var(--wow-accent) !important;
+  appearance: textfield !important;
   -moz-appearance: textfield !important;
 }
 
@@ -1101,6 +1104,7 @@ body.wow-looter-system-dnd5e {
 .wow-looter-app .gm-item-qty-input::-webkit-inner-spin-button,
 .wow-looter-app .gm-pool-qty-input::-webkit-outer-spin-button,
 .wow-looter-app .gm-pool-qty-input::-webkit-inner-spin-button {
+  appearance: none;
   -webkit-appearance: none;
   margin: 0;
 }
@@ -1985,11 +1989,13 @@ body.wow-looter-system-dnd5e {
   font-size: 0.78rem !important;
   font-weight: bold !important;
   padding: 0 !important;
+  appearance: textfield !important;
   -moz-appearance: textfield !important;
 }
 
 .wow-looter-manual-app .item-take-qty-input::-webkit-outer-spin-button,
 .wow-looter-manual-app .item-take-qty-input::-webkit-inner-spin-button {
+  appearance: none;
   -webkit-appearance: none;
   margin: 0;
 }
@@ -3561,6 +3567,7 @@ body.wow-looter-system-dnd5e {
 
 .merchant-stock-input::-webkit-outer-spin-button,
 .merchant-stock-input::-webkit-inner-spin-button {
+  appearance: none;
   -webkit-appearance: none;
   margin: 0;
 }
