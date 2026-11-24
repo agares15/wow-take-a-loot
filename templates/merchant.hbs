@@ -6,7 +6,8 @@
     </div>
     {{#if isGM}}
     <div class="header-actions">
-      <button type="button" class="header-btn" data-action="open-loot-settings" title="{{localize 'WOW_LOOTER.Settings.LootSettingsTitle'}}">
+      <button type="button" class="header-btn" data-action="open-loot-settings"
+        title="{{localize 'WOW_LOOTER.Settings.LootSettingsTitle'}}">
         <i class="fas fa-cog"></i>
       </button>
     </div>
@@ -20,13 +21,13 @@
       <span class="shopping-as-label">{{localize "WOW_LOOTER.Merchant.ShoppingAs"}}</span>
       <div class="shopping-as-select-wrap">
         {{#if (gt looterOptions.length 1)}}
-          <select class="shopping-as-select">
-            {{#each looterOptions}}
-              <option value="{{this.id}}" {{#if this.selected}}selected{{/if}}>{{this.name}}</option>
-            {{/each}}
-          </select>
+        <select class="shopping-as-select">
+          {{#each looterOptions}}
+          <option value="{{this.id}}" {{#if this.selected}}selected{{/if}}>{{this.name}}</option>
+          {{/each}}
+        </select>
         {{else}}
-          <span class="shopping-as-static">{{shopperName}}</span>
+        <span class="shopping-as-static">{{shopperName}}</span>
         {{/if}}
       </div>
     </div>
@@ -62,9 +63,9 @@
         <div class="desc-card-content">
           <p class="desc-card-text">
             {{#if merchantDescription}}
-              {{merchantDescription}}
+            {{merchantDescription}}
             {{else if isGM}}
-              <span class="desc-placeholder">{{localize "WOW_LOOTER.Merchant.DefaultDescription"}}</span>
+            <span class="desc-placeholder">{{localize "WOW_LOOTER.Merchant.DefaultDescription"}}</span>
             {{/if}}
           </p>
         </div>
@@ -80,17 +81,21 @@
     <main class="merchant-right-col">
       <!-- Pestañas de Navegación -->
       <nav class="merchant-nav-tabs-row">
-        <button type="button" class="merchant-nav-tab {{#if isBuyTab}}active{{/if}}" data-action="switch-tab" data-tab="buy">
+        <button type="button" class="merchant-nav-tab {{#if isBuyTab}}active{{/if}}" data-action="switch-tab"
+          data-tab="buy">
           <i class="fas fa-sack-dollar"></i> {{localize "WOW_LOOTER.Merchant.TabBuy"}}
         </button>
-        <button type="button" class="merchant-nav-tab {{#if isSellTab}}active{{/if}}" data-action="switch-tab" data-tab="sell">
+        <button type="button" class="merchant-nav-tab {{#if isSellTab}}active{{/if}}" data-action="switch-tab"
+          data-tab="sell">
           <i class="fas fa-coins"></i> {{localize "WOW_LOOTER.Merchant.TabSell"}}
         </button>
-        <button type="button" class="merchant-nav-tab {{#if isBuybackTab}}active{{/if}}" data-action="switch-tab" data-tab="buyback">
+        <button type="button" class="merchant-nav-tab {{#if isBuybackTab}}active{{/if}}" data-action="switch-tab"
+          data-tab="buyback">
           <i class="fas fa-rotate-left"></i> {{localize "WOW_LOOTER.Merchant.TabBuyback"}}
         </button>
         {{#if canIdentify}}
-        <button type="button" class="merchant-nav-tab {{#if isIdentifyTab}}active{{/if}}" data-action="switch-tab" data-tab="identify">
+        <button type="button" class="merchant-nav-tab {{#if isIdentifyTab}}active{{/if}}" data-action="switch-tab"
+          data-tab="identify">
           <i class="fas fa-magnifying-glass"></i> {{localize "WOW_LOOTER.Merchant.TabIdentify"}}
         </button>
         {{/if}}
@@ -99,22 +104,28 @@
       <!-- Fila de Filtros y Búsqueda -->
       <div class="merchant-filters-row">
         <div class="search-input-wrap">
-          <input type="text" class="merchant-search-input" value="{{searchTerm}}" placeholder="{{localize 'WOW_LOOTER.Merchant.SearchPlaceholder'}}" />
+          <input type="text" class="merchant-search-input" value="{{searchTerm}}"
+            placeholder="{{localize 'WOW_LOOTER.Merchant.SearchPlaceholder'}}" />
         </div>
         <select class="merchant-filter-select">
-          <option value="all" {{#if (eq filterType "all")}}selected{{/if}}>{{localize "WOW_LOOTER.Merchant.AllTypes"}}</option>
-          <option value="Armor" {{#if (eq filterType "Armor")}}selected{{/if}}>Armor</option>
-          <option value="Weapons" {{#if (eq filterType "Weapons")}}selected{{/if}}>Weapons</option>
-          <option value="Consumables" {{#if (eq filterType "Consumables")}}selected{{/if}}>Consumables</option>
-          <option value="Equipment" {{#if (eq filterType "Equipment")}}selected{{/if}}>Equipment</option>
-          <option value="Containers" {{#if (eq filterType "Containers")}}selected{{/if}}>Containers</option>
-          <option value="Treasure" {{#if (eq filterType "Treasure")}}selected{{/if}}>Treasure</option>
+          <option value="all" {{#if (eq filterType "all" )}}selected{{/if}}>{{localize "WOW_LOOTER.Merchant.AllTypes"}}
+          </option>
+          <option value="Armor" {{#if (eq filterType "Armor" )}}selected{{/if}}>Armor</option>
+          <option value="Weapons" {{#if (eq filterType "Weapons" )}}selected{{/if}}>Weapons</option>
+          <option value="Consumables" {{#if (eq filterType "Consumables" )}}selected{{/if}}>Consumables</option>
+          <option value="Equipment" {{#if (eq filterType "Equipment" )}}selected{{/if}}>Equipment</option>
+          <option value="Containers" {{#if (eq filterType "Containers" )}}selected{{/if}}>Containers</option>
+          <option value="Treasure" {{#if (eq filterType "Treasure" )}}selected{{/if}}>Treasure</option>
         </select>
         <select class="merchant-sort-select">
-          <option value="type" {{#if (eq sortBy "type")}}selected{{/if}}>{{localize "WOW_LOOTER.Merchant.SortByType"}}</option>
-          <option value="name" {{#if (eq sortBy "name")}}selected{{/if}}>{{localize "WOW_LOOTER.Merchant.SortByName"}}</option>
-          <option value="price-asc" {{#if (eq sortBy "price-asc")}}selected{{/if}}>{{localize "WOW_LOOTER.Merchant.SortByPriceAsc"}}</option>
-          <option value="price-desc" {{#if (eq sortBy "price-desc")}}selected{{/if}}>{{localize "WOW_LOOTER.Merchant.SortByPriceDesc"}}</option>
+          <option value="type" {{#if (eq sortBy "type" )}}selected{{/if}}>{{localize "WOW_LOOTER.Merchant.SortByType"}}
+          </option>
+          <option value="name" {{#if (eq sortBy "name" )}}selected{{/if}}>{{localize "WOW_LOOTER.Merchant.SortByName"}}
+          </option>
+          <option value="price-asc" {{#if (eq sortBy "price-asc" )}}selected{{/if}}>{{localize
+            "WOW_LOOTER.Merchant.SortByPriceAsc"}}</option>
+          <option value="price-desc" {{#if (eq sortBy "price-desc" )}}selected{{/if}}>{{localize
+            "WOW_LOOTER.Merchant.SortByPriceDesc"}}</option>
         </select>
       </div>
 
@@ -149,132 +160,174 @@
         <!-- Lista de Items Agrupados por Categoría -->
         <div class="merchant-items-scroll-area">
           {{#if hasAnyItems}}
-            {{#each activeGroupedItems}}
-            <div class="merchant-category-group">
-              <div class="category-header-row">
-                <span class="category-title">{{this.category}}</span>
-                <div class="category-col-headers {{#if (and ../isBuyTab ../isGM)}}is-gm{{/if}}">
-                  <span class="col-qty">{{localize "WOW_LOOTER.Merchant.Quantity"}}</span>
-                  <span class="col-bulk">{{localize "WOW_LOOTER.Merchant.Bulk"}}</span>
-                  <span class="col-price" title="{{localize 'WOW_LOOTER.Merchant.Price'}}">{{localize "WOW_LOOTER.Merchant.Price"}}</span>
-                  <span class="col-actions-spacer"></span>
-                </div>
+          {{#each activeGroupedItems}}
+          <div class="merchant-category-group">
+            <div class="category-header-row">
+              <span class="category-title">{{this.category}}</span>
+              <div class="category-col-headers {{#if (and ../isBuyTab ../isGM)}}is-gm{{/if}}">
+                <span class="col-qty">{{localize "WOW_LOOTER.Merchant.Quantity"}}</span>
+                <span class="col-bulk">{{localize "WOW_LOOTER.Merchant.Bulk"}}</span>
+                <span class="col-price" title="{{localize 'WOW_LOOTER.Merchant.Price'}}">{{localize
+                  "WOW_LOOTER.Merchant.Price"}}</span>
+                <span class="col-actions-spacer"></span>
               </div>
+            </div>
 
-              <div class="category-items-list">
-                {{#each this.items}}
-                <div class="merchant-item-card {{#if this.isHidden}}item-hidden-row{{/if}}" data-item-id="{{this.id}}">
-                  <div class="item-main-row">
-                    <!-- Icono y Nombre -->
-                    <div class="item-left-cell" data-action="toggle-item-desc">
+            <div class="category-items-list">
+              {{#each this.items}}
+              <div class="merchant-item-card {{#if this.isHidden}}item-hidden-row{{/if}}" data-item-id="{{this.id}}">
+                <div class="item-main-row">
+                  <!-- Icono y Nombre -->
+                  <div class="item-left-cell" data-action="toggle-item-desc">
+                    <span class="item-img-wrap">
                       <img src="{{this.img}}" alt="{{this.name}}" class="item-img" />
-                      <span class="item-name">{{this.name}}</span>
-                      <i class="fas fa-chevron-down toggle-desc-icon"></i>
-                    </div>
-
-                    <!-- Controles y Datos a la Derecha -->
-                    <div class="item-right-cell">
-                      <!-- Cantidad -->
-                      <div class="item-qty-box">
-                        {{#if ../../isGM}}
-                          <div class="merchant-stock-stepper">
-                            <button type="button" class="btn-stock-step" data-action="step-stock" data-delta="-1" data-item-id="{{this.id}}" title="-1">
-                              <i class="fas fa-minus"></i>
-                            </button>
-                            <input type="number" class="merchant-stock-input num-box" value="{{this.stock}}" min="1" data-item-id="{{this.id}}" title="{{localize 'WOW_LOOTER.Merchant.StockQuantity'}}" />
-                            <button type="button" class="btn-stock-step" data-action="step-stock" data-delta="1" data-item-id="{{this.id}}" title="+1">
-                              <i class="fas fa-plus"></i>
-                            </button>
-                          </div>
-                        {{else}}
-                          <span class="merchant-stock-badge num-box">{{this.stock}}</span>
-                        {{/if}}
-                      </div>
-
-                      <!-- Carga / Bulk -->
-                      <div class="item-bulk-box" title="{{localize 'WOW_LOOTER.Merchant.Bulk'}}">
-                        <i class="fas fa-weight-hanging"></i>
-                        <span>{{this.bulk}}</span>
-                      </div>
-
-                      <!-- Etiqueta de Precio -->
-                      <div class="item-price-tag" title="{{localize 'WOW_LOOTER.Merchant.Price'}}">
-                        <i class="fas fa-tag"></i>
-                        <span>{{this.formattedPrice}}</span>
-                      </div>
-
-                      <!-- Botón de Acción Principal -->
-                      {{#if ../../isBuyTab}}
-                        <button type="button" class="btn btn-trade-action btn-buy-green {{#unless this.canAfford}}disabled{{/unless}}"
-                          data-action="buy-item" data-item-id="{{this.id}}" data-quantity="{{this.selectedQty}}"
-                          {{#unless this.canAfford}}disabled title="{{localize 'WOW_LOOTER.Merchant.CannotAfford'}}"{{/unless}}>
-                          {{localize "WOW_LOOTER.Merchant.Buy"}}
-                        </button>
-                      {{else if ../../isSellTab}}
-                        <button type="button" class="btn btn-trade-action btn-buy-green"
-                          data-action="sell-item" data-item-id="{{this.id}}" data-quantity="{{this.selectedQty}}">
-                          {{localize "WOW_LOOTER.Merchant.Sell"}}
-                        </button>
-                      {{else if ../../isBuybackTab}}
-                        <button type="button" class="btn btn-trade-action btn-buy-green {{#unless this.canAfford}}disabled{{/unless}}"
-                          data-action="buyback-item" data-buyback-id="{{this.id}}" data-quantity="{{this.selectedQty}}"
-                          {{#unless this.canAfford}}disabled title="{{localize 'WOW_LOOTER.Merchant.CannotAfford'}}"{{/unless}}>
-                          {{localize "WOW_LOOTER.Merchant.Buyback"}}
-                        </button>
-                      {{else if ../../isIdentifyTab}}
-                        {{#if this.isPendingIdentify}}
-                          <button type="button" class="btn btn-trade-action btn-identify-pending" disabled
-                            title="{{localize 'WOW_LOOTER.Merchant.IdentifyRequestSent'}}">
-                            <i class="fas fa-spinner fa-spin"></i>
-                            <span>{{localize "WOW_LOOTER.Merchant.IdentifyPending"}}</span>
-                          </button>
-                        {{else}}
-                          <button type="button" class="btn btn-trade-action btn-buy-green"
-                            data-action="identify-item" data-item-id="{{this.id}}">
-                            {{localize "WOW_LOOTER.Merchant.IdentifyBtn"}}
-                          </button>
-                        {{/if}}
+                      {{#if ../../isGM}}
+                      <button type="button" class="btn-img-edit-overlay" data-action="edit-item" data-item-id="{{this.id}}" title="{{localize 'WOW_LOOTER.Common.EditItem'}}">
+                        <i class="fas fa-pen-to-square"></i>
+                      </button>
                       {{/if}}
-
-                      <!-- Acciones de GM (Solo pestaña Comprar) -->
-                      {{#if (and ../../isBuyTab ../../isGM)}}
-                        <button type="button" class="btn-item-visibility {{#if this.isHidden}}is-hidden{{/if}}" data-action="toggle-item-visibility" data-item-id="{{this.id}}" title="{{localize 'WOW_LOOTER.Merchant.ToggleVisibility'}}">
-                          <i class="fas {{#if this.isHidden}}fa-eye-slash{{else}}fa-eye{{/if}}"></i>
-                        </button>
-                        <button type="button" class="btn-trash-item" data-action="gm-delete-item" data-item-id="{{this.id}}" title="{{localize 'WOW_LOOTER.Merchant.DeleteItem'}}">
-                          <i class="fas fa-trash-can"></i>
-                        </button>
-                      {{/if}}
-                    </div>
+                    </span>
+                    <span class="item-name">{{this.name}}</span>
+                    <i class="fas fa-chevron-down toggle-desc-icon"></i>
                   </div>
 
-                  <!-- Cajón Desplegable de Descripción y Control de Cantidad -->
-                  <div class="item-description-drawer" style="display: none;">
-                    {{#if (gt this.stock 1)}}
-                    <div class="item-qty-slider-row" data-item-id="{{this.id}}" data-unit-copper="{{this.unitCostCopper}}">
-                      <label><i class="fas fa-cubes"></i> {{localize "WOW_LOOTER.Manual.QuantityToTake"}}:</label>
-                      <input type="range" class="qty-slider" min="1" max="{{this.stock}}" value="{{this.selectedQty}}" />
-                      <span class="qty-slider-val">{{this.selectedQty}} / {{this.stock}}</span>
-                    </div>
-                    {{/if}}
-                    <div class="item-desc-content">
-                      {{#if this.description}}
-                        {{{this.description}}}
+                  <!-- Controles y Datos a la Derecha -->
+                  <div class="item-right-cell">
+                    <!-- Cantidad -->
+                    <div class="item-qty-box">
+                      {{#if this.isInfinite}}
+                      <span class="merchant-stock-badge num-box"
+                        title="{{localize 'WOW_LOOTER.Merchant.InfiniteQuantity'}}">∞</span>
+                      {{else if ../../isGM}}
+                      <div class="merchant-stock-stepper">
+                        <button type="button" class="btn-stock-step" data-action="step-stock" data-delta="-1"
+                          data-item-id="{{this.id}}" title="-1">
+                          <i class="fas fa-minus"></i>
+                        </button>
+                        <input type="number" class="merchant-stock-input num-box" value="{{this.stock}}" min="0"
+                          data-item-id="{{this.id}}" title="{{localize 'WOW_LOOTER.Merchant.StockQuantity'}}" />
+                        <button type="button" class="btn-stock-step" data-action="step-stock" data-delta="1"
+                          data-item-id="{{this.id}}" title="+1">
+                          <i class="fas fa-plus"></i>
+                        </button>
+                      </div>
                       {{else}}
-                        <p class="no-desc">{{localize "WOW_LOOTER.Common.NoDescription"}}</p>
+                      <span class="merchant-stock-badge num-box">{{this.stock}}</span>
                       {{/if}}
                     </div>
+
+                    <!-- Carga / Bulk -->
+                    <div class="item-bulk-box" title="{{localize 'WOW_LOOTER.Merchant.Bulk'}}">
+                      <i class="fas fa-weight-hanging"></i>
+                      <span>{{this.bulk}}</span>
+                    </div>
+
+                    <!-- Etiqueta de Precio -->
+                    <div class="item-price-tag" title="{{localize 'WOW_LOOTER.Merchant.Price'}}">
+                      <i class="fas fa-tag"></i>
+                      <span>{{this.formattedPrice}}</span>
+                    </div>
+
+                    <!-- Botón de Acción Principal -->
+                    {{#if ../../isBuyTab}}
+                    {{#if this.isSoldOut}}
+                    <button type="button" class="btn btn-trade-action btn-sold-out disabled" disabled>
+                      {{localize "WOW_LOOTER.Merchant.SoldOut"}}
+                    </button>
+                    {{else}}
+                    <button type="button"
+                      class="btn btn-trade-action btn-buy-green {{#unless this.canAfford}}disabled{{/unless}}"
+                      data-action="buy-item" data-item-id="{{this.id}}" data-quantity="{{this.selectedQty}}" {{#unless
+                      this.canAfford}}disabled title="{{localize 'WOW_LOOTER.Merchant.CannotAfford'}}" {{/unless}}>
+                      {{localize "WOW_LOOTER.Merchant.Buy"}}
+                    </button>
+                    {{/if}}
+                    {{else if ../../isSellTab}}
+                    <button type="button" class="btn btn-trade-action btn-buy-green" data-action="sell-item"
+                      data-item-id="{{this.id}}" data-quantity="{{this.selectedQty}}">
+                      {{localize "WOW_LOOTER.Merchant.Sell"}}
+                    </button>
+                    {{else if ../../isBuybackTab}}
+                    <button type="button"
+                      class="btn btn-trade-action btn-buy-green {{#unless this.canAfford}}disabled{{/unless}}"
+                      data-action="buyback-item" data-buyback-id="{{this.id}}" data-quantity="{{this.selectedQty}}"
+                      {{#unless this.canAfford}}disabled title="{{localize 'WOW_LOOTER.Merchant.CannotAfford'}}"
+                      {{/unless}}>
+                      {{localize "WOW_LOOTER.Merchant.Buyback"}}
+                    </button>
+                    {{else if ../../isIdentifyTab}}
+                    {{#if this.isPendingIdentify}}
+                    <button type="button" class="btn btn-trade-action btn-identify-pending" disabled
+                      title="{{localize 'WOW_LOOTER.Merchant.IdentifyRequestSent'}}">
+                      <i class="fas fa-spinner fa-spin"></i>
+                      <span>{{localize "WOW_LOOTER.Merchant.IdentifyPending"}}</span>
+                    </button>
+                    {{else}}
+                    <button type="button" class="btn btn-trade-action btn-buy-green" data-action="identify-item"
+                      data-item-id="{{this.id}}">
+                      {{localize "WOW_LOOTER.Merchant.IdentifyBtn"}}
+                    </button>
+                    {{/if}}
+                    {{/if}}
+
+                    <!-- Acciones de GM -->
+                    {{#if (and ../../isBuyTab ../../isGM)}}
+                    <button type="button" class="btn-item-settings" data-action="item-settings"
+                      data-item-id="{{this.id}}" title="{{localize 'WOW_LOOTER.Merchant.ItemSettings'}}">
+                      <i class="fas fa-cog"></i>
+                    </button>
+                    <button type="button" class="btn-item-visibility {{#if this.isHidden}}is-hidden{{/if}}"
+                      data-action="toggle-item-visibility" data-item-id="{{this.id}}"
+                      title="{{localize 'WOW_LOOTER.Merchant.ToggleVisibility'}}">
+                      <i class="fas {{#if this.isHidden}}fa-eye-slash{{else}}fa-eye{{/if}}"></i>
+                    </button>
+                    <button type="button" class="btn-trash-item" data-action="gm-delete-item" data-item-id="{{this.id}}"
+                      title="{{localize 'WOW_LOOTER.Merchant.DeleteItem'}}">
+                      <i class="fas fa-trash-can"></i>
+                    </button>
+                    {{/if}}
                   </div>
                 </div>
-                {{/each}}
+
+                <!-- Cajón Desplegable de Descripción y Control de Cantidad -->
+                <div class="item-description-drawer" style="display: none;">
+                  {{#if (gt this.stock 1)}}
+                  <div class="item-qty-slider-row" data-item-id="{{this.id}}"
+                    data-unit-copper="{{this.unitCostCopper}}">
+                    <label><i class="fas fa-cubes"></i> {{localize "WOW_LOOTER.Manual.QuantityToTake"}}:</label>
+                    <input type="range" class="qty-slider" min="1" max="{{this.stock}}" value="{{this.selectedQty}}" />
+                    <span class="qty-slider-val">{{this.selectedQty}} / {{this.stock}}</span>
+                  </div>
+                  {{/if}}
+                  <div class="item-desc-content">
+                    {{#if this.description}}
+                    {{{this.description}}}
+                    {{else}}
+                    <p class="no-desc">{{localize "WOW_LOOTER.Common.NoDescription"}}</p>
+                    {{/if}}
+                  </div>
+                </div>
               </div>
+              {{/each}}
             </div>
-            {{/each}}
+          </div>
+          {{/each}}
           {{else}}
-            <div class="empty-state">
-              <i class="fas fa-box-open fa-2x"></i>
+          <div class="empty-state">
+            {{#if isBuyTab}}
+              <i class="fas fa-sack-dollar fa-2x"></i>
               <p>{{localize "WOW_LOOTER.Merchant.NoItemsForSale"}}</p>
-            </div>
+            {{else if isSellTab}}
+              <i class="fas fa-coins fa-2x"></i>
+              <p>{{localize "WOW_LOOTER.Merchant.NoItemsToSell"}}</p>
+            {{else if isBuybackTab}}
+              <i class="fas fa-rotate-left fa-2x"></i>
+              <p>{{localize "WOW_LOOTER.Merchant.NoItemsToBuyback"}}</p>
+            {{else if isIdentifyTab}}
+              <i class="fas fa-magnifying-glass fa-2x"></i>
+              <p>{{localize "WOW_LOOTER.Merchant.NoItemsToIdentify"}}</p>
+            {{/if}}
+          </div>
           {{/if}}
         </div>
       </div>

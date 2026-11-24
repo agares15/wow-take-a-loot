@@ -1022,12 +1022,134 @@ body.wow-looter-system-dnd5e {
 }
 
 .wow-looter-app .player-claim-qty-input {
-  width: 32px !important;
+  width: 28px !important;
   height: 22px !important;
   text-align: center !important;
   padding: 0 !important;
-  font-size: 0.8rem !important;
+  font-size: 0.76rem !important;
   font-weight: 700 !important;
+  background: #10141d !important;
+  border: 1px solid #2d384d !important;
+  color: #f8fafc !important;
+  border-radius: 4px !important;
+  -moz-appearance: textfield !important;
+}
+
+.wow-looter-app .player-claim-qty-input::-webkit-outer-spin-button,
+.wow-looter-app .player-claim-qty-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Quantity Stepper (+ [input] -) & Item Description Tags */
+.wow-looter-app .qty-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: transparent;
+  border: none;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.wow-looter-app .qty-stepper .btn-qty-step {
+  width: 18px;
+  height: 22px;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 0.65rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color 0.12s, transform 0.1s;
+}
+
+.wow-looter-app .qty-stepper .btn-qty-step:hover {
+  color: var(--wow-accent);
+  transform: scale(1.1);
+}
+
+.wow-looter-app .gm-qty-edit-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 4px;
+  color: #94a3b8;
+  font-size: 0.78rem;
+}
+
+.wow-looter-app .gm-item-qty-input,
+.wow-looter-app .gm-pool-qty-input {
+  width: 32px !important;
+  height: 20px !important;
+  padding: 0 2px !important;
+  text-align: center !important;
+  font-size: 0.76rem !important;
+  font-weight: 700 !important;
+  background: #10141d !important;
+  border: 1px solid #2d384d !important;
+  border-radius: 3px !important;
+  color: var(--wow-accent) !important;
+  -moz-appearance: textfield !important;
+}
+
+.wow-looter-app .gm-item-qty-input::-webkit-outer-spin-button,
+.wow-looter-app .gm-item-qty-input::-webkit-inner-spin-button,
+.wow-looter-app .gm-pool-qty-input::-webkit-outer-spin-button,
+.wow-looter-app .gm-pool-qty-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.wow-looter-app .wow-item-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.wow-looter-app .wow-item-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-radius: 3px;
+  background: #1e2638;
+  border: 1px solid #364259;
+  color: #cbd5e1;
+}
+
+.wow-looter-app .wow-item-tag.tag-rarity.rarity-uncommon {
+  background: rgba(194, 65, 12, 0.25);
+  border-color: #ea580c;
+  color: #fdba74;
+}
+
+.wow-looter-app .wow-item-tag.tag-rarity.rarity-rare {
+  background: rgba(29, 78, 216, 0.28);
+  border-color: #3b82f6;
+  color: #93c5fd;
+}
+
+.wow-looter-app .wow-item-tag.tag-rarity.rarity-veryrare,
+.wow-looter-app .wow-item-tag.tag-rarity.rarity-unique {
+  background: rgba(126, 34, 206, 0.28);
+  border-color: #a855f7;
+  color: #d8b4fe;
+}
+
+.wow-looter-app .wow-item-tag.tag-rarity.rarity-legendary,
+.wow-looter-app .wow-item-tag.tag-rarity.rarity-artifact {
+  background: rgba(180, 83, 9, 0.3);
+  border-color: #f59e0b;
+  color: #fde68a;
 }
 
 /* Botón Claim / Claimed */
@@ -1853,16 +1975,201 @@ body.wow-looter-system-dnd5e {
 }
 
 .wow-looter-manual-app .item-take-qty-input {
-  width: 36px !important;
-  height: 28px !important;
+  width: 28px !important;
+  height: 24px !important;
   background: #10141d !important;
   border: 1px solid #2d384d !important;
   color: #f8fafc !important;
   border-radius: 4px !important;
   text-align: center !important;
-  font-size: 0.85rem !important;
+  font-size: 0.78rem !important;
   font-weight: bold !important;
   padding: 0 !important;
+  -moz-appearance: textfield !important;
+}
+
+.wow-looter-manual-app .item-take-qty-input::-webkit-outer-spin-button,
+.wow-looter-manual-app .item-take-qty-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.wow-looter-manual-app .btn-delete-loot-item {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.wow-looter-manual-app .btn-delete-loot-item:hover {
+  background: #34363a;
+  color: #ffffff;
+}
+
+.wow-looter-app .item-img-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.wow-looter-app .btn-img-edit-overlay {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 14, 23, 0.75);
+  border: 1px solid var(--wow-accent-border);
+  border-radius: 4px;
+  color: var(--wow-accent);
+  font-size: 0.78rem;
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+  z-index: 2;
+}
+
+.wow-looter-app .item-img-wrap:hover .btn-img-edit-overlay {
+  opacity: 1;
+}
+
+.wow-looter-item-settings-app .mis-slider-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.wow-looter-item-settings-app .mis-range-slider {
+  width: 120px;
+  height: 4px;
+  accent-color: var(--wow-accent);
+  cursor: pointer;
+}
+
+.wow-looter-item-settings-app .btn-set-custom-price {
+  width: 100%;
+  height: 32px;
+  background: #141923;
+  border: 1px solid #364259;
+  border-radius: 5px;
+  color: #e2e8f0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.wow-looter-item-settings-app .btn-set-custom-price:hover {
+  border-color: var(--wow-accent);
+  color: var(--wow-accent);
+  background: #1a2130;
+}
+
+.wow-looter-item-settings-app .mis-custom-price-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.wow-looter-item-settings-app .mis-currency-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: #10141d;
+  padding: 5px 8px;
+  border-radius: 4px;
+  border: 1px solid #263144;
+}
+
+.wow-looter-item-settings-app .mis-currency-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #e2e8f0;
+  font-size: 0.82rem;
+}
+
+.wow-looter-item-settings-app .mis-currency-label img {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: none;
+}
+
+.wow-looter-item-settings-app .mis-currency-row .num-input {
+  width: 64px !important;
+  height: 24px !important;
+  text-align: center !important;
+}
+
+.wow-looter-app .btn-edit-item,
+.wow-looter-app .btn-item-settings,
+.wow-looter-manual-app .btn-edit-loot-item {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.wow-looter-app .btn-edit-item:hover,
+.wow-looter-app .btn-item-settings:hover,
+.wow-looter-manual-app .btn-edit-loot-item:hover {
+  background: #34363a;
+  color: #ffffff;
+}
+
+.wow-looter-app .btn-sold-out {
+  background: #1f2937 !important;
+  border: 1px solid #374151 !important;
+  color: #9ca3af !important;
+  cursor: not-allowed !important;
+}
+
+.wow-looter-manual-app .btn-add-money {
+  height: 24px;
+  padding: 0 10px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  background: #242c3d;
+  border: 1px solid #364259;
+  color: #e2e8f0;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+
+.wow-looter-manual-app .btn-add-money:hover {
+  border-color: var(--wow-accent);
+  color: var(--wow-accent);
 }
 
 .wow-looter-manual-app .btn-item-loot {
@@ -3024,6 +3331,23 @@ body.wow-looter-system-dnd5e {
   background: #55688a;
 }
 
+.merchant-items-scroll-area .empty-state {
+  flex: 1;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  padding: 24px 16px;
+  color: #64748b;
+}
+
+.merchant-items-scroll-area .empty-state p {
+  margin: 0;
+}
+
 /* Grupos por Categoría */
 .merchant-category-group {
   display: flex;
@@ -3178,7 +3502,7 @@ body.wow-looter-system-dnd5e {
 .merchant-item-card .item-right-cell {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 4px;
   flex-shrink: 0;
 }
 
@@ -3365,6 +3689,7 @@ body.wow-looter-system-dnd5e {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }

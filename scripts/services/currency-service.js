@@ -429,6 +429,94 @@ export class CurrencyService {
   }
 
   /**
+   * Evalúa el precio efectivo de compra de un item en el mercader,
+   * considerando isFree, customPrice (incluyendo monedas personalizadas) y priceModifier.
+   */
+  static evaluateItemBuyPrice(item, globalBuyModifier = 100, itemSettings = null) {
+    const settings = itemSettings || item?.getFlag?.(MODULE_ID, "merchantItemSettings") || {};
+    if (settings.isFree) {
+      return {
+        isFree: true,
+        isCustomPrice: false,
+        copperValue: 0,
+        customAmounts: {},
+        formattedPrice: game.i18n.localize("WOW_LOOTER.Merchant.Free")
+      };
+    }
+
+    const rawBuyMod = settings.buyPriceModifier ?? settings.priceModifier;
+    const hasCustomModifier = rawBuyMod !== null && rawBuyMod !== undefined && rawBuyMod !== "";
+    const effectiveModifier = hasCustomModifier ? Math.max(0, Number(rawBuyMod)) : Number(globalBuyModifier ?? 100);
+
+    if (Array.isArray(settings.customPrice) && settings.customPrice.length > 0) {
+      const mult = { cp: 1, sp: 10, ep: 50, gp: 100, pp: 1000 };
+      let copperValue = 0;
+      const customAmounts = {};
+      const parts = [];
+      const modFactor = hasCustomModifier ? (effectiveModifier / 100) : 1;
+
+      for (const entry of settings.customPrice) {
+        const rawAmt = Number(entry?.amount || 0);
+        const amt = Math.max(0, Math.round(rawAmt * modFactor));
+        if (!entry?.key || amt <= 0) continue;
+        const k = String(entry.key).toLowerCase();
+        const meta = this.getCurrencyMetadata(k);
+        if (meta.isCustom) {
+          customAmounts[meta.key] = (customAmounts[meta.key] || 0) + amt;
+        } else {
+          copperValue += amt * (mult[k] || 100);
+        }
+        parts.push(`${amt} ${meta.label}`);
+      }
+
+      if (parts.length > 0) {
+        return {
+          isFree: false,
+          isCustomPrice: true,
+          copperValue,
+          customAmounts,
+          formattedPrice: parts.join(", ")
+        };
+      }
+    }
+
+    const basePriceData = this.getItemPriceData(item);
+    const copperValue = Math.max(0, Math.round(basePriceData.copperValue * (effectiveModifier / 100)));
+    return {
+      isFree: copperValue === 0,
+      isCustomPrice: false,
+      copperValue,
+      customAmounts: {},
+      formattedPrice: copperValue === 0 ? game.i18n.localize("WOW_LOOTER.Merchant.Free") : this.formatCopperPrice(copperValue)
+    };
+  }
+
+  /**
+   * Comprueba si un actor puede pagar una evaluación de precio (monedas estándar + personalizadas).
+   */
+  static canActorAffordPrice(actor, priceEval, quantity = 1) {
+    if (!actor || !priceEval) return false;
+    if (priceEval.isFree) return true;
+    const qty = Math.max(1, Number(quantity) || 1);
+
+    if (priceEval.copperValue > 0 && !this.canActorAfford(actor, priceEval.copperValue * qty)) {
+      return false;
+    }
+
+    const customEntries = Object.entries(priceEval.customAmounts || {});
+    if (customEntries.length > 0) {
+      const actorCurrencies = this.getActorCurrencies(actor);
+      for (const [key, amt] of customEntries) {
+        if (Number(actorCurrencies[key] || 0) < amt * qty) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
+  /**
    * Formatea un valor en cobre a una cadena legible (ej: "15 GP", "2 SP, 5 CP").
    */
   static formatCopperPrice(copperValue) {

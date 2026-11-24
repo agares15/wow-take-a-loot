@@ -283,7 +283,27 @@ export class LootSettingsApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     if (this.parentApp && this.parentApp.rendered) {
-      this.parentApp.render(false);
+      const isParentMerchant = this.parentApp.id === "wow-looter-merchant";
+      const shouldBeMerchant = chosenLootType === "merchant";
+
+      if (isParentMerchant !== shouldBeMerchant) {
+        const reopenOpts = {
+          targetToken: this.parentApp.targetToken,
+          lootingToken: this.parentApp.lootingToken,
+          targetActor: this.parentApp.targetActor,
+          lootingActor: this.parentApp.lootingActor
+        };
+        await this.parentApp.close({ animate: false });
+        if (shouldBeMerchant) {
+          const { MerchantApp } = await import("./merchant-app.js");
+          new MerchantApp(reopenOpts).render(true);
+        } else {
+          const { ManualLootApp } = await import("./manual-loot-app.js");
+          new ManualLootApp(reopenOpts).render(true);
+        }
+      } else {
+        this.parentApp.render(false);
+      }
     }
 
     this.close({ animate: false });

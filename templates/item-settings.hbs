@@ -1,0 +1,104 @@
+<div class="wow-looter-window loot-settings-window item-settings-window">
+  <!-- Cabecera -->
+  <header class="looter-header settings-header">
+    <h2><i class="fas fa-cog"></i> {{itemName}}</h2>
+  </header>
+
+  <div class="settings-form-scrollable">
+    <div class="form-group-card settings-card">
+      <!-- Infinite Quantity -->
+      <div class="settings-field-row split-row">
+        <div class="settings-label-group">
+          <label class="settings-field-label">{{localize "WOW_LOOTER.Merchant.InfiniteQuantity"}}</label>
+          <span class="settings-hint">{{localize "WOW_LOOTER.Merchant.InfiniteQuantityHint"}}</span>
+        </div>
+        <input type="checkbox" class="setting-checkbox" id="mis-infinite" {{#if infiniteQuantity}}checked{{/if}} />
+      </div>
+
+      <!-- Keep When Sold Out -->
+      <div class="settings-field-row split-row">
+        <div class="settings-label-group">
+          <label class="settings-field-label">{{localize "WOW_LOOTER.Merchant.KeepWhenSoldOut"}}</label>
+          <span class="settings-hint">{{localize "WOW_LOOTER.Merchant.KeepWhenSoldOutHint"}}</span>
+        </div>
+        <input type="checkbox" class="setting-checkbox" id="mis-keep-soldout" {{#if keepWhenSoldOut}}checked{{/if}} />
+      </div>
+
+      <!-- Is Service -->
+      <div class="settings-field-row split-row">
+        <div class="settings-label-group">
+          <label class="settings-field-label">{{localize "WOW_LOOTER.Merchant.IsService"}}</label>
+          <span class="settings-hint">{{localize "WOW_LOOTER.Merchant.IsServiceHint"}}</span>
+        </div>
+        <input type="checkbox" class="setting-checkbox" id="mis-service" {{#if isService}}checked{{/if}} />
+      </div>
+
+      <!-- Is Free -->
+      <div class="settings-field-row split-row">
+        <div class="settings-label-group">
+          <label class="settings-field-label">{{localize "WOW_LOOTER.Merchant.IsFree"}}</label>
+          <span class="settings-hint">{{localize "WOW_LOOTER.Merchant.IsFreeHint"}}</span>
+        </div>
+        <input type="checkbox" class="setting-checkbox" id="mis-free" {{#if isFree}}checked{{/if}} />
+      </div>
+
+      <!-- Buy Price Modifier -->
+      <div class="settings-field-row split-row">
+        <div class="settings-label-group">
+          <label class="settings-field-label">{{localize "WOW_LOOTER.Merchant.BuyPriceModifier"}}</label>
+          <span class="settings-hint">{{localize "WOW_LOOTER.Merchant.BuyPriceModifierHint"}}</span>
+        </div>
+        <div class="mis-slider-group">
+          <input type="range" class="mis-range-slider" id="mis-buy-slider" min="0" max="300" step="5" value="{{buySliderVal}}" />
+          <div class="unit-input-group">
+            <input type="number" class="setting-input num-input" id="mis-buy-mod" value="{{buyPriceModifier}}" min="0" max="1000" step="5" />
+            <span class="unit-addon">%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sell Price Modifier -->
+      <div class="settings-field-row split-row">
+        <div class="settings-label-group">
+          <label class="settings-field-label">{{localize "WOW_LOOTER.Merchant.SellPriceModifier"}}</label>
+          <span class="settings-hint">{{localize "WOW_LOOTER.Merchant.SellPriceModifierHint"}}</span>
+        </div>
+        <div class="mis-slider-group">
+          <input type="range" class="mis-range-slider" id="mis-sell-slider" min="0" max="300" step="5" value="{{sellSliderVal}}" />
+          <div class="unit-input-group">
+            <input type="number" class="setting-input num-input" id="mis-sell-mod" value="{{sellPriceModifier}}" min="0" max="1000" step="5" />
+            <span class="unit-addon">%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Set Custom Price -->
+      <div class="mis-custom-price-wrap">
+        <button type="button" class="btn-set-custom-price" data-action="toggle-custom-price">
+          <i class="fas fa-coins"></i> {{localize "WOW_LOOTER.Merchant.SetCustomPrice"}}
+        </button>
+        <div id="mis-custom-price-panel" class="mis-custom-price-grid" style="display: {{#if hasCustomPrice}}grid{{else}}none{{/if}};">
+          {{#each customCurrencies}}
+          <div class="mis-currency-row">
+            <span class="mis-currency-label">
+              <img src="{{this.img}}" alt="{{this.label}}" />
+              <strong>{{this.label}}</strong>
+            </span>
+            <input type="number" class="setting-input num-input custom-price-currency-input" data-currency-key="{{this.key}}" value="{{this.amount}}" min="0" />
+          </div>
+          {{/each}}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pie de Ventana -->
+  <footer class="looter-footer settings-footer">
+    <button type="button" class="btn btn-secondary btn-footer-cancel" data-action="cancel">
+      <i class="fas fa-times"></i> {{localize "WOW_LOOTER.Common.Cancel"}}
+    </button>
+    <button type="button" class="btn btn-primary btn-footer-save" data-action="save-settings">
+      <i class="fas fa-save"></i> {{localize "WOW_LOOTER.Settings.SaveChanges"}}
+    </button>
+  </footer>
+</div>

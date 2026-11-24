@@ -2,6 +2,7 @@ import { MODULE_ID, SOCKET_EVENTS, SETTINGS } from "../constants.js";
 import { socketService } from "./socket-service.js";
 import { getSystemAdapter } from "../adapters/index.js";
 import { currencyService } from "./currency-service.js";
+import { extractItemTags, isAmmunitionItem, normalizeAmmunitionItemData } from "../utils/dom-helpers.js";
 
 /**
  * Gestor del ciclo de vida y resolución de la sesión de Looting.
@@ -90,17 +91,21 @@ export class LootSessionManager {
         quantity: i.quantity || 1,
         sourceActorId: i.sourceActorId,
         sourceActorUuid: i.sourceActorUuid || null,
+        sourceChunks: Array.isArray(i.sourceChunks) ? i.sourceChunks : [],
         sourceName: i.sourceName || "",
         description: i.description || i.systemData?.system?.description?.value || i.systemData?.system?.description || "",
+        tags: extractItemTags(i.systemData || i),
         claims: [] // Array de { userId, characterId, characterName, characterImg, quantity }
       };
     });
+
+    const selectedEligiblePlayers = (eligiblePlayers || []).filter((p) => p && p.selected !== false);
 
     this.session = {
       id: foundry.utils.randomID(),
       items: sanitizedItems,
       currencies: { ...currencies },
-      eligiblePlayers: eligiblePlayers.map((p) => ({
+      eligiblePlayers: selectedEligiblePlayers.map((p) => ({
         userId: p.userId,
         characterId: p.characterId,
         characterName: p.characterName,
@@ -338,6 +343,49 @@ export class LootSessionManager {
     const grantQty = Math.max(1, Number(qty) || 1);
     if (!targetActor) return false;
 
+    if (Array.isArray(item.sourceChunks) && item.sourceChunks.length > 0) {
+      let remaining = grantQty;
+      let anyTransferred = false;
+      for (const chunk of item.sourceChunks) {
+        if (remaining <= 0) break;
+        const available = Math.max(0, Number(chunk.quantity) || 0);
+        if (available <= 0) continue;
+        const take = Math.min(remaining, available);
+        const chunkActor = await this._resolveActor(chunk.sourceActorUuid, chunk.sourceActorId);
+        if (chunkActor) {
+          const transferred = await adapter.transferItem(chunkActor, targetActor, chunk.sourceItemId, take);
+          if (transferred) {
+            chunk.quantity -= take;
+            remaining -= take;
+            anyTransferred = true;
+          }
+        }
+      }
+      if (remaining <= 0) return true;
+      if (anyTransferred && remaining > 0) {
+        // Si el GM aumentó manualmente la cantidad más allá del stock original, crear el excedente
+        const systemData = this.customItemsData.get(item.id)
+          || this.customItemsData.get(item.sourceItemId)
+          || item.systemData;
+        if (systemData) {
+          const existing = targetActor.items.find((i) => i.name === item.name && i.type === (systemData.type || "loot"));
+          if (existing) {
+            await existing.update({ "system.quantity": Number(existing.system?.quantity ?? 1) + remaining });
+          } else {
+            const itemData = {
+              name: item.name,
+              img: item.img,
+              type: systemData.type || "loot",
+              system: foundry.utils.deepClone(systemData.system || {})
+            };
+            if (itemData.system) itemData.system.quantity = remaining;
+            await targetActor.createEmbeddedDocuments("Item", [itemData]);
+          }
+        }
+        return true;
+      }
+    }
+
     if (sourceActor) {
       const transferred = await adapter.transferItem(sourceActor, targetActor, item.sourceItemId || item.id, grantQty);
       if (transferred) return true;
@@ -347,13 +395,25 @@ export class LootSessionManager {
       || this.customItemsData.get(item.sourceItemId)
       || item.systemData;
     if (systemData) {
+      const itemType = systemData.type || "loot";
+      const existing = targetActor.items.find((i) => i.name === item.name && i.type === itemType);
+      if (existing) {
+        const curQty = Number(existing.quantity ?? existing.system?.quantity ?? 1);
+        await existing.update({ "system.quantity": curQty + grantQty });
+        return true;
+      }
       const itemData = {
         name: item.name,
         img: item.img,
-        type: systemData.type || "loot",
+        type: itemType,
         system: foundry.utils.deepClone(systemData.system || {})
       };
-      if (itemData.system) itemData.system.quantity = grantQty;
+      if (itemData.system) {
+        itemData.system.quantity = grantQty;
+        if (isAmmunitionItem(itemData)) {
+          normalizeAmmunitionItemData(itemData, grantQty);
+        }
+      }
       delete itemData._id;
       delete itemData._stats;
       const created = await targetActor.createEmbeddedDocuments("Item", [itemData]);

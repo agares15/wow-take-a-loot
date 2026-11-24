@@ -1,4 +1,5 @@
 import { BaseSystemAdapter } from "./base-adapter.js";
+import { getEffectiveItemQuantity, isAmmunitionItem, normalizeAmmunitionItemData } from "../utils/dom-helpers.js";
 import { MODULE_ID, FLAGS } from "../constants.js";
 
 /**
@@ -68,7 +69,7 @@ export class Dnd5eAdapter extends BaseSystemAdapter {
     const item = typeof itemOrId === "string" ? sourceActor.items.get(itemOrId) : itemOrId;
     if (!item) return null;
 
-    const sourceQty = Number(item.system?.quantity ?? 1);
+    const sourceQty = getEffectiveItemQuantity(item);
     const transferQty = Math.min(Math.max(1, quantity), sourceQty);
 
     const itemData = item.toObject();
@@ -76,6 +77,9 @@ export class Dnd5eAdapter extends BaseSystemAdapter {
     delete itemData._stats;
     itemData.system = itemData.system || {};
     itemData.system.quantity = transferQty;
+    if (isAmmunitionItem(itemData)) {
+      normalizeAmmunitionItemData(itemData, transferQty);
+    }
     if (itemData.system.equipped !== undefined) {
       itemData.system.equipped = false;
     }
@@ -86,8 +90,8 @@ export class Dnd5eAdapter extends BaseSystemAdapter {
       (i) => i.name === item.name && i.type === item.type
     );
 
-    if (existing && existing.system?.quantity !== undefined) {
-      const newQty = Number(existing.system.quantity) + transferQty;
+    if (existing) {
+      const newQty = getEffectiveItemQuantity(existing) + transferQty;
       await existing.update({ "system.quantity": newQty });
       createdItem = existing;
     } else {

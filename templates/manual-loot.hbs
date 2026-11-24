@@ -48,12 +48,18 @@
   </header>
 
   <!-- Panel de Monedas -->
-  {{#if hasCurrencies}}
+  {{#if (or hasCurrencies isGM)}}
   <section class="looter-box currency-manual-box">
     <div class="box-header">
       <h3><i class="fas fa-coins"></i> {{localize "WOW_LOOTER.Manual.Money"}}</h3>
+      {{#if isGM}}
+      <button type="button" class="btn btn-secondary btn-sm btn-add-money" data-action="add-money">
+        <i class="fas fa-plus"></i> {{localize "WOW_LOOTER.Manual.AddMoney"}}
+      </button>
+      {{/if}}
     </div>
 
+    {{#if hasCurrencies}}
     <div class="manual-currency-content">
       <div class="currency-pills-row">
         {{#each currenciesList}}
@@ -88,6 +94,8 @@
           <i class="fas fa-users"></i> {{localize "WOW_LOOTER.Manual.SplitWithParty"}}
         </button>
       </div>
+    </div>
+    {{/if}}
 
   </section>
   {{/if}}
@@ -103,18 +111,36 @@
       {{#each items}}
       <li class="manual-item-row" data-item-id="{{this.id}}">
         <div class="manual-item-main">
-          <img src="{{this.img}}" alt="{{this.name}}" class="item-img" data-action="toggle-item-desc" />
+          <span class="item-img-wrap">
+            <img src="{{this.img}}" alt="{{this.name}}" class="item-img" data-action="toggle-item-desc" />
+            {{#if ../isGM}}
+            <button type="button" class="btn-img-edit-overlay" data-action="edit-item" data-item-id="{{this.id}}" title="{{localize 'WOW_LOOTER.Common.EditItem'}}">
+              <i class="fas fa-pen-to-square"></i>
+            </button>
+            {{/if}}
+          </span>
           <div class="item-details" data-action="toggle-item-desc">
             <span class="item-name">{{this.name}}</span>
-            {{#if (gt this.quantity 1)}}
-            <span class="item-qty-badge">x{{this.quantity}}</span>
+            {{#if ../isGM}}
+              <span class="gm-qty-edit-wrap" title="{{localize 'WOW_LOOTER.Manual.QuantityToTake'}}">
+                <span class="gm-qty-prefix">x</span>
+                <input type="number" class="gm-item-qty-input num-box" min="1" value="{{this.quantity}}" data-item-id="{{this.id}}" />
+              </span>
+            {{else}}
+              {{#if (gt this.quantity 1)}}
+              <span class="item-qty-badge">x{{this.quantity}}</span>
+              {{/if}}
             {{/if}}
             <i class="fas fa-chevron-down toggle-desc-icon"></i>
           </div>
           <div class="item-actions">
             {{#if (gt this.quantity 1)}}
-            <input type="number" class="item-take-qty-input num-box" min="1" max="{{this.quantity}}" value="1"
-              title="{{localize 'WOW_LOOTER.Manual.QuantityToTake'}}" />
+            <div class="qty-stepper">
+              <button type="button" class="btn-qty-step" data-qty-step="-1" title="-1 (Shift: -5, Alt: -10)"><i class="fas fa-minus"></i></button>
+              <input type="number" class="item-take-qty-input num-box" min="1" max="{{this.quantity}}" value="1"
+                title="{{localize 'WOW_LOOTER.Manual.QuantityToTake'}}" />
+              <button type="button" class="btn-qty-step" data-qty-step="1" title="+1 (Shift: +5, Alt: +10)"><i class="fas fa-plus"></i></button>
+            </div>
             {{/if}}
             <div class="item-bulk-badge" title="{{localize 'WOW_LOOTER.Merchant.Bulk'}}">
               <i class="fas fa-weight-hanging"></i>
@@ -124,6 +150,12 @@
               data-item-id="{{this.id}}" title="{{localize 'WOW_LOOTER.Manual.LootItem'}}">
               {{localize "WOW_LOOTER.Manual.LootItem"}}
             </button>
+            {{#if ../isGM}}
+            <button type="button" class="btn-icon danger btn-sm btn-delete-loot-item" data-action="delete-item"
+              data-item-id="{{this.id}}" title="{{localize 'WOW_LOOTER.Common.Delete'}}">
+              <i class="fas fa-trash"></i>
+            </button>
+            {{/if}}
           </div>
         </div>
         <div class="item-description-drawer" style="display: none;">

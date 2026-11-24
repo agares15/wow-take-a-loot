@@ -4,7 +4,18 @@ import { socketService } from "../services/socket-service.js";
 import { ChatAnnouncer } from "../services/chat-announcer.js";
 import { currencyService } from "../services/currency-service.js";
 import { LootSettingsApp } from "./loot-settings-app.js";
-import { protectDropdowns, enrichItemDescription } from "../utils/dom-helpers.js";
+import {
+  protectDropdowns,
+  enrichItemDescription,
+  bindQuantitySteppers,
+  isAmmunitionItem,
+  getEffectiveItemQuantity,
+  normalizeAmmunitionItemData,
+  parseDropData,
+  resolveDroppedItem,
+  promptAmmunitionQuantity,
+  promptItemQuantitySlider
+} from "../utils/dom-helpers.js";
 import { applyContainerTexture } from "../utils/container-helpers.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -91,6 +102,7 @@ export class ManualLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
       "split-currency-party": ManualLootApp._onSplitCurrencyParty,
       "open-loot-settings": ManualLootApp._onOpenLootSettings,
       "open-actor-sheet": ManualLootApp._onOpenActorSheet,
+      "add-money": ManualLootApp._onAddMoney,
       "toggle-item-desc": ManualLootApp._onToggleItemDesc,
       "close": ManualLootApp._onClose
     }
@@ -124,22 +136,40 @@ export class ManualLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
       this.lootingActor = destination;
     }
 
-    const rawItems = currencyService.filterLootableItems(adapter.getLootableItems(source));
+    let rawItems = currencyService.filterLootableItems(adapter.getLootableItems(source));
+    if (game.user.isGM && source && rawItems.length > 1) {
+      const merged = await this._consolidateDuplicateItems(source, rawItems);
+      if (merged) {
+        rawItems = currencyService.filterLootableItems(adapter.getLootableItems(source));
+      }
+    }
     const currencies = currencyService.getActorCurrencies(source);
 
-    const items = await Promise.all(rawItems.map(async (i) => ({
-      id: i.id,
-      name: i.name,
-      img: i.img,
-      quantity: Number(i.quantity ?? i.system?.quantity ?? 1),
-      bulk: adapter.getItemBulk(i),
-      description: await enrichItemDescription(i.system?.description?.value || i.system?.description || "", i)
-    })));
+    // Agrupar visualmente también en caso de que un jugador abra antes de que el GM consolide
+    const stackedMap = new Map();
+    for (const i of rawItems) {
+      const key = `${(i.name || "").trim().toLowerCase()}::${(i.type || "").trim().toLowerCase()}`;
+      const qty = getEffectiveItemQuantity(i);
+      const existing = stackedMap.get(key);
+      if (existing) {
+        existing.quantity += qty;
+      } else {
+        stackedMap.set(key, {
+          id: i.id,
+          name: i.name,
+          img: i.img,
+          quantity: qty,
+          bulk: adapter.getItemBulk(i),
+          description: await enrichItemDescription(i.system?.description?.value || i.system?.description || "", i)
+        });
+      }
+    }
+    const items = Array.from(stackedMap.values());
 
     const currenciesList = [];
     let hasCurrencies = false;
     for (const [key, value] of Object.entries(currencies)) {
-      if (value > 0 || game.user.isGM) {
+      if (Number(value) > 0) {
         hasCurrencies = true;
         const meta = currencyService.getCurrencyMetadata(key);
         currenciesList.push({
@@ -284,12 +314,72 @@ export class ManualLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   /**
+   * Consolida automáticamente ítems idénticos (mismo nombre y tipo) dentro del actor de botín.
+   */
+  async _consolidateDuplicateItems(source, rawItems) {
+    if (!source || !Array.isArray(rawItems) || rawItems.length < 2) return false;
+    const groups = new Map();
+    for (const item of rawItems) {
+      const key = `${(item.name || "").trim().toLowerCase()}::${(item.type || "").trim().toLowerCase()}`;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(item);
+    }
+
+    let didMerge = false;
+    for (const group of groups.values()) {
+      if (group.length < 2) continue;
+      didMerge = true;
+      const primary = group[0];
+      const totalQty = group.reduce((sum, it) => sum + getEffectiveItemQuantity(it), 0);
+      const updateData = { "system.quantity": totalQty };
+      if (isAmmunitionItem(primary)) {
+        updateData["system._wowNormalizedAmmo"] = true;
+        if (primary.system?.uses && Number(primary.system.uses.max) > 1) {
+          updateData["system.uses.value"] = 1;
+          updateData["system.uses.max"] = 1;
+        }
+        if (primary.system?.price && Number(primary.system.price.per) > 1) {
+          updateData["system.price.per"] = 1;
+        }
+      }
+      await primary.update(updateData).catch(() => {});
+      const dupIds = group.slice(1).map((d) => d.id).filter(Boolean);
+      if (dupIds.length > 0) {
+        await source.deleteEmbeddedDocuments("Item", dupIds).catch(() => {});
+      }
+    }
+    return didMerge;
+  }
+
+  async _preRender(context, options) {
+    await super._preRender?.(context, options);
+    const html = this.element;
+    if (!html) return;
+    this._savedScroll = {
+      list: html.querySelector(".manual-loot-list")?.scrollTop ?? 0,
+      win: html.querySelector(".window-content")?.scrollTop ?? 0
+    };
+  }
+
+  /**
    * Conecta los listeners del DOM tras renderizar.
    */
   _onRender(context, options) {
     super._onRender(context, options);
     const html = this.element;
     protectDropdowns(html);
+    bindQuantitySteppers(html);
+
+    if (this._savedScroll) {
+      const restore = () => {
+        const listEl = html.querySelector(".manual-loot-list");
+        const winEl = html.querySelector(".window-content");
+        if (listEl && this._savedScroll.list) listEl.scrollTop = this._savedScroll.list;
+        if (winEl && this._savedScroll.win) winEl.scrollTop = this._savedScroll.win;
+      };
+      restore();
+      requestAnimationFrame(restore);
+    }
 
     const avatarImg = html.querySelector(".target-avatar-img");
     if (avatarImg) {
@@ -325,6 +415,42 @@ export class ManualLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const qtyInput = row?.querySelector(".item-take-qty-input");
         const quantity = qtyInput ? Math.max(1, Number(qtyInput.value || 1)) : 1;
         await this._executeTransfer("take-item", { itemId, quantity });
+      });
+    });
+
+    // Botón para editar la ficha del item (solo GM)
+    html.querySelectorAll("[data-action='edit-item']").forEach((btn) => {
+      btn.addEventListener("click", async (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        if (!game.user.isGM) return;
+        const row = btn.closest(".manual-item-row") || btn.closest("[data-item-id]");
+        const itemId = btn.dataset.itemId || row?.dataset.itemId;
+        const source = this.targetToken?.actor || this.targetActor;
+        const item = source?.items?.get(itemId);
+        if (item?.sheet) {
+          item.sheet.render(true);
+        }
+      });
+    });
+
+    // Botón para borrar un item (solo GM)
+    html.querySelectorAll("[data-action='delete-item']").forEach((btn) => {
+      btn.addEventListener("click", async (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        if (!game.user.isGM) return;
+        const row = btn.closest(".manual-item-row") || btn.closest("[data-item-id]");
+        const itemId = btn.dataset.itemId || row?.dataset.itemId;
+        const source = this.targetToken?.actor || this.targetActor;
+        const item = source?.items?.get(itemId);
+        if (!item) return;
+        await item.delete();
+        socketService.emit(SOCKET_EVENTS.MANUAL_LOOT_UPDATED, {
+          targetActorId: source.id,
+          targetTokenId: this.targetToken?.id
+        });
+        this.render(false);
       });
     });
 
@@ -394,6 +520,40 @@ export class ManualLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
       });
     });
 
+    // Edición de cantidades de item en vivo (solo GM)
+    html.querySelectorAll("input.gm-item-qty-input[data-item-id]").forEach((input) => {
+      input.addEventListener("pointerdown", (ev) => ev.stopPropagation());
+      input.addEventListener("mousedown", (ev) => ev.stopPropagation());
+      input.addEventListener("click", (ev) => ev.stopPropagation());
+      input.addEventListener("change", async (ev) => {
+        if (!game.user.isGM) return;
+        const itemId = ev.target.dataset.itemId;
+        const newQty = Math.max(1, Math.floor(Number(ev.target.value || 1)));
+        ev.target.value = String(newQty);
+        const source = this.targetToken?.actor || this.targetActor;
+        const item = source?.items?.get(itemId);
+        if (!item) return;
+
+        const updateData = { "system.quantity": newQty };
+        if (isAmmunitionItem(item)) {
+          updateData["system._wowNormalizedAmmo"] = true;
+          if (item.system?.uses && Number(item.system.uses.max) > 1) {
+            updateData["system.uses.value"] = 1;
+            updateData["system.uses.max"] = 1;
+          }
+          if (item.system?.price && Number(item.system.price.per) > 1) {
+            updateData["system.price.per"] = 1;
+          }
+        }
+        await item.update(updateData);
+        socketService.emit(SOCKET_EVENTS.MANUAL_LOOT_UPDATED, {
+          targetActorId: source.id,
+          targetTokenId: this.targetToken?.id
+        });
+        this.render(false);
+      });
+    });
+
     // Edición de monedas en vivo por parte del GM
     html.querySelectorAll("input.coin-input[data-currency]").forEach((input) => {
       input.addEventListener("change", (ev) => {
@@ -419,9 +579,12 @@ export class ManualLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
     if (!html || html.dataset.wowDropBound === "true") return;
     html.dataset.wowDropBound = "true";
 
+    html.addEventListener("dragenter", (ev) => {
+      ev.preventDefault();
+    });
+
     html.addEventListener("dragover", (ev) => {
       ev.preventDefault();
-      ev.dataTransfer.dropEffect = "copy";
     });
 
     html.addEventListener("drop", async (ev) => {
@@ -430,27 +593,93 @@ export class ManualLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
       if (this._isProcessingDrop) return;
       this._isProcessingDrop = true;
       try {
-        let dragData;
-        try {
-          dragData = TextEditor.getDragEventData(ev);
-        } catch (err) {
-          return;
-        }
-        if (dragData?.type !== "Item" || !dragData.uuid) return;
+        const dragData = parseDropData(ev);
+        if (!dragData || dragData.type !== "Item") return;
 
-        const item = await fromUuid(dragData.uuid);
+        const item = await resolveDroppedItem(dragData);
         if (!item) return;
 
         const source = this.targetToken?.actor || this.targetActor;
         if (!source) return;
 
-        const itemData = item.toObject();
-        delete itemData._id;
-        delete itemData._stats;
-        if (itemData.system?.containerId) itemData.system.containerId = null;
+        const fromActor = item.actor || (dragData.actorId ? game.actors?.get(dragData.actorId) : null);
+        if (fromActor && fromActor.id === source.id) return;
 
-        await source.createEmbeddedDocuments("Item", [itemData]);
-        ui.notifications.info(`${item.name} añadido al botín.`);
+        // Si el usuario es jugador, solo puede arrastrar items desde un personaje que le pertenezca
+        if (!game.user.isGM) {
+          const isOwnedByPlayer = Boolean(
+            fromActor && (
+              fromActor.isOwner
+              || fromActor.getUserLevel?.(game.user) >= CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER
+              || game.user.character?.id === fromActor.id
+            )
+          );
+          if (!isOwnedByPlayer) {
+            ui.notifications.warn(game.i18n.localize("WOW_LOOTER.Warning.OnlyOwnInventoryDrop"));
+            return;
+          }
+        }
+
+        const availableQty = getEffectiveItemQuantity(item);
+
+        // Caso 1: El ítem proviene del inventario de un Actor (ej. jugador o GM dejando un objeto en el botín)
+        if (fromActor) {
+          let chosenQty = 1;
+          if (availableQty > 1) {
+            chosenQty = await promptItemQuantitySlider(item.name, availableQty, 1);
+            if (!chosenQty) return;
+          }
+          await this._executeTransfer("deposit-item", {
+            sourceActorId: fromActor.id,
+            sourceActorUuid: fromActor.uuid || null,
+            itemId: item.id,
+            quantity: chosenQty
+          });
+          return;
+        }
+
+        // Caso 2: El GM arrastra un ítem desde Compendio o Directorio de Items
+        if (!game.user.isGM) return;
+
+        let chosenQty = availableQty;
+        if (isAmmunitionItem(item)) {
+          chosenQty = await promptAmmunitionQuantity(item.name, 10);
+          if (!chosenQty) return;
+        } else if (availableQty > 1) {
+          chosenQty = await promptItemQuantitySlider(item.name, availableQty, 1);
+          if (!chosenQty) return;
+        }
+
+        // Apilar siempre items idénticos en el botín
+        const existing = source.items.find((i) => i.name === item.name && i.type === item.type);
+        if (existing) {
+          const nextQty = getEffectiveItemQuantity(existing) + chosenQty;
+          const updateData = { "system.quantity": nextQty };
+          if (isAmmunitionItem(existing)) {
+            updateData["system._wowNormalizedAmmo"] = true;
+            if (existing.system?.uses && Number(existing.system.uses.max) > 1) {
+              updateData["system.uses.value"] = 1;
+              updateData["system.uses.max"] = 1;
+            }
+            if (existing.system?.price && Number(existing.system.price.per) > 1) {
+              updateData["system.price.per"] = 1;
+            }
+          }
+          await existing.update(updateData);
+        } else {
+          const itemData = item.toObject();
+          delete itemData._id;
+          delete itemData._stats;
+          if (itemData.system?.containerId) itemData.system.containerId = null;
+          itemData.system = itemData.system || {};
+          itemData.system.quantity = chosenQty;
+          if (isAmmunitionItem(itemData)) {
+            normalizeAmmunitionItemData(itemData, chosenQty);
+          }
+          await source.createEmbeddedDocuments("Item", [itemData]);
+        }
+
+        ui.notifications.info(`${item.name} (x${chosenQty}) añadido al botín.`);
 
         // Notificar por socket y refrescar
         socketService.emit(SOCKET_EVENTS.MANUAL_LOOT_UPDATED, {
@@ -481,14 +710,18 @@ export class ManualLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
       this.lootingActor = destination;
     }
 
-    if (!source || !destination) {
-      ui.notifications.warn(game.i18n.localize("WOW_LOOTER.Warning.SelectYourTokenFirst"));
-      return;
-    }
+    if (!source) return;
 
-    if (source.id === destination.id) {
-      ui.notifications.warn("El personaje receptor no puede ser el mismo objetivo que el saqueado. Selecciona un personaje jugador receptor.");
-      return;
+    if (action !== "deposit-item") {
+      if (!destination) {
+        ui.notifications.warn(game.i18n.localize("WOW_LOOTER.Warning.SelectYourTokenFirst"));
+        return;
+      }
+
+      if (source.id === destination.id) {
+        ui.notifications.warn("El personaje receptor no puede ser el mismo objetivo que el saqueado. Selecciona un personaje jugador receptor.");
+        return;
+      }
     }
 
     if (game.user.isGM) {
@@ -500,7 +733,7 @@ export class ManualLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
         targetTokenId: this.targetToken?.id,
         lootingTokenId: this.lootingToken?.id,
         targetActorId: source.id,
-        lootingActorId: destination.id
+        lootingActorId: destination?.id || data.sourceActorId
       });
     }
   }
@@ -518,7 +751,8 @@ export class ManualLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
       if (pcs.length > 0) destination = pcs[0];
     }
 
-    if (!source || !destination) return;
+    if (!source) return;
+    if (action !== "deposit-item" && !destination) return;
 
     if (action === "take-item") {
       const item = source.items.get(data.itemId);
@@ -527,15 +761,43 @@ export class ManualLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
       const qty = Math.max(1, Number(data.quantity || 1));
       await adapter.transferItem(source, destination, data.itemId, qty);
       await ChatAnnouncer.announceItemPickup(destination, source, itemName, itemImg, qty);
+    } else if (action === "deposit-item") {
+      let fromActor = null;
+      if (data.sourceActorUuid) {
+        const doc = await fromUuid(data.sourceActorUuid).catch(() => null);
+        fromActor = doc?.actor || doc;
+      }
+      if (!fromActor && data.sourceActorId) {
+        fromActor = game.actors.get(data.sourceActorId);
+      }
+      if (!fromActor) fromActor = destination;
+      if (fromActor && fromActor.id !== source.id) {
+        const item = fromActor.items?.get(data.itemId);
+        const itemName = item?.name || "Objeto";
+        const itemImg = item?.img || "icons/svg/item-bag.svg";
+        const qty = Math.max(1, Number(data.quantity || 1));
+        const transferred = await adapter.transferItem(fromActor, source, data.itemId, qty, { silent: true });
+        if (transferred) {
+          const lootName = this.targetToken?.name || source.name;
+          const dropMsg = game.i18n.format("WOW_LOOTER.Chat.DroppedItemInLoot", {
+            character: fromActor.name,
+            item: qty > 1 ? `${itemName} (x${qty})` : itemName,
+            loot: lootName
+          });
+          ui.notifications.info(dropMsg);
+          this._pendingDropNotification = dropMsg;
+          await ChatAnnouncer.announceItemDrop(fromActor, source, itemName, itemImg, qty);
+        }
+      }
     } else if (action === "loot-all-items") {
       const items = adapter.getLootableItems(source);
       const itemsList = items.map((i) => ({
         name: i.name,
         img: i.img,
-        quantity: Number(i.quantity ?? i.system?.quantity ?? 1)
+        quantity: getEffectiveItemQuantity(i)
       }));
       for (const item of items) {
-        await adapter.transferItem(source, destination, item.id, item.system?.quantity || 1);
+        await adapter.transferItem(source, destination, item.id, getEffectiveItemQuantity(item));
       }
       if (itemsList.length > 0) {
         await ChatAnnouncer.announceAllItemsPickup(destination, source, itemsList);
@@ -604,15 +866,95 @@ export class ManualLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     // Notificar a todos los clientes para que actualicen sus ventanas abiertas
+    const dropNotification = this._pendingDropNotification || null;
+    this._pendingDropNotification = null;
     socketService.emit(SOCKET_EVENTS.MANUAL_LOOT_UPDATED, {
       targetActorId: source.id,
-      targetTokenId: this.targetToken?.id
+      targetTokenId: this.targetToken?.id,
+      dropNotification
     });
 
     this.render(false);
   }
 
   // --- Handlers de Interfaz (ApplicationV2) ---
+
+  static async _onAddMoney(event, target) {
+    if (!game.user.isGM) return;
+    const source = this.targetToken?.actor || this.targetActor;
+    if (!source) return;
+
+    const adapter = getSystemAdapter();
+    const standardKeys = adapter.getCurrencyKeys();
+    const customKeys = currencyService.getCustomCurrencies().map((c) => c.key);
+    const allKeys = Array.from(new Set([...standardKeys, ...customKeys]));
+
+    const optionsHtml = allKeys.map((k) => {
+      const meta = currencyService.getCurrencyMetadata(k);
+      return `<option value="${k}">${foundry.utils.escapeHTML(meta.label)}</option>`;
+    }).join("");
+
+    const content = `
+      <div style="display:flex; flex-direction:column; gap:10px; padding:6px 0;">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+          <label style="font-weight:600; color:#e2e8f0;">${game.i18n.localize("WOW_LOOTER.Manual.CurrencyType")}:</label>
+          <select id="wow-add-money-key" style="min-width:140px;">${optionsHtml}</select>
+        </div>
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+          <label style="font-weight:600; color:#e2e8f0;">${game.i18n.localize("WOW_LOOTER.Manual.AddMoneyAmount")}:</label>
+          <input type="number" id="wow-add-money-amount" value="10" min="1" style="width:140px; text-align:center;" />
+        </div>
+      </div>
+    `;
+
+    let result = null;
+    if (foundry.applications?.api?.DialogV2) {
+      result = await foundry.applications.api.DialogV2.prompt({
+        window: { title: game.i18n.localize("WOW_LOOTER.Manual.AddMoneyTitle") },
+        content,
+        ok: {
+          label: game.i18n.localize("WOW_LOOTER.Manual.AddMoney"),
+          icon: "fas fa-plus",
+          callback: (ev, btn, dialog) => ({
+            key: dialog.element.querySelector("#wow-add-money-key")?.value,
+            amount: Math.max(0, Math.floor(Number(dialog.element.querySelector("#wow-add-money-amount")?.value || 0)))
+          })
+        },
+        rejectClose: false
+      });
+    } else {
+      result = await new Promise((resolve) => {
+        new Dialog({
+          title: game.i18n.localize("WOW_LOOTER.Manual.AddMoneyTitle"),
+          content,
+          buttons: {
+            add: {
+              icon: '<i class="fas fa-plus"></i>',
+              label: game.i18n.localize("WOW_LOOTER.Manual.AddMoney"),
+              callback: (html) => {
+                const el = html instanceof HTMLElement ? html : html[0];
+                resolve({
+                  key: el.querySelector("#wow-add-money-key")?.value,
+                  amount: Math.max(0, Math.floor(Number(el.querySelector("#wow-add-money-amount")?.value || 0)))
+                });
+              }
+            },
+            cancel: { label: game.i18n.localize("WOW_LOOTER.Common.Cancel"), callback: () => resolve(null) }
+          },
+          default: "add"
+        }).render(true);
+      });
+    }
+
+    if (!result || !result.key || result.amount <= 0) return;
+
+    await currencyService.giveCurrency(source, result.key, result.amount);
+    socketService.emit(SOCKET_EVENTS.MANUAL_LOOT_UPDATED, {
+      targetActorId: source.id,
+      targetTokenId: this.targetToken?.id
+    });
+    this.render(false);
+  }
 
   static _onOpenLootSettings(event, target) {
     new LootSettingsApp({
@@ -750,6 +1092,9 @@ export class ManualLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
 // Sincronizar en tiempo real el refresco de ventanas de loot manual de forma ligera
 socketService.register(SOCKET_EVENTS.MANUAL_LOOT_UPDATED, (data) => {
+  if (data?.dropNotification) {
+    ui.notifications.info(data.dropNotification);
+  }
   if (ManualLootApp.activeInstance && ManualLootApp.activeInstance.rendered) {
     const source = ManualLootApp.activeInstance.targetToken?.actor || ManualLootApp.activeInstance.targetActor;
     // Si el actor o token fue eliminado, cerrar la ventana

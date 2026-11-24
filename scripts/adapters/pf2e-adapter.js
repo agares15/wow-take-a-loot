@@ -1,5 +1,6 @@
 import { BaseSystemAdapter } from "./base-adapter.js";
 import { MODULE_ID, FLAGS } from "../constants.js";
+import { getEffectiveItemQuantity, isAmmunitionItem, normalizeAmmunitionItemData } from "../utils/dom-helpers.js";
 
 // Tipos de items físicos en el inventario de PF2e
 const PHYSICAL_ITEM_TYPES = new Set([
@@ -289,7 +290,7 @@ export class PF2eAdapter extends BaseSystemAdapter {
   /**
    * Transfiere un item entre actores en PF2e.
    */
-  async transferItem(sourceActor, targetActor, itemOrId, quantity = 1) {
+  async transferItem(sourceActor, targetActor, itemOrId, quantity = 1, { silent = false } = {}) {
     const source = sourceActor instanceof Actor ? sourceActor : (sourceActor?.actor || sourceActor);
     const target = targetActor instanceof Actor ? targetActor : (targetActor?.actor || targetActor);
 
@@ -305,7 +306,7 @@ export class PF2eAdapter extends BaseSystemAdapter {
       return null;
     }
 
-    const sourceQty = Number(item.quantity ?? item.system?.quantity ?? 1);
+    const sourceQty = getEffectiveItemQuantity(item);
     const transferQty = Math.min(Math.max(1, quantity), sourceQty);
 
     try {
@@ -316,6 +317,9 @@ export class PF2eAdapter extends BaseSystemAdapter {
 
       itemData.system = itemData.system || {};
       itemData.system.quantity = transferQty;
+      if (isAmmunitionItem(itemData)) {
+        normalizeAmmunitionItemData(itemData, transferQty);
+      }
 
       // Limpiar contenedor y normalizar estado de equipado
       if (itemData.system.containerId) {
@@ -332,16 +336,23 @@ export class PF2eAdapter extends BaseSystemAdapter {
 
       let createdItem = null;
 
-      // En PF2e, solo apilar consumibles o tesoros apilables (no armas ni armaduras)
-      const isStackable = Boolean(item.isStackable || itemData.system.stackGroup || ["consumable", "treasure"].includes(item.type));
-
-      const existing = isStackable
-        ? target.items.find((i) => i.name === item.name && i.type === item.type)
-        : null;
+      // Apilar siempre todos los items idénticos (mismo nombre y tipo)
+      const existing = target.items.find((i) => i.name === item.name && i.type === item.type);
 
       if (existing) {
-        const currentTargetQty = Number(existing.quantity ?? existing.system?.quantity ?? 1);
-        await existing.update({ "system.quantity": currentTargetQty + transferQty });
+        const currentTargetQty = getEffectiveItemQuantity(existing);
+        const updateData = { "system.quantity": currentTargetQty + transferQty };
+        if (isAmmunitionItem(existing)) {
+          updateData["system._wowNormalizedAmmo"] = true;
+          if (existing.system?.uses && Number(existing.system.uses.max) > 1) {
+            updateData["system.uses.value"] = 1;
+            updateData["system.uses.max"] = 1;
+          }
+          if (existing.system?.price && Number(existing.system.price.per) > 1) {
+            updateData["system.price.per"] = 1;
+          }
+        }
+        await existing.update(updateData);
         createdItem = existing;
       } else {
         const created = await target.createEmbeddedDocuments("Item", [itemData]);
@@ -352,11 +363,24 @@ export class PF2eAdapter extends BaseSystemAdapter {
       if (sourceQty <= transferQty) {
         await item.delete();
       } else {
-        await item.update({ "system.quantity": sourceQty - transferQty });
+        const remainUpdate = { "system.quantity": sourceQty - transferQty };
+        if (isAmmunitionItem(item)) {
+          remainUpdate["system._wowNormalizedAmmo"] = true;
+          if (item.system?.uses && Number(item.system.uses.max) > 1) {
+            remainUpdate["system.uses.value"] = 1;
+            remainUpdate["system.uses.max"] = 1;
+          }
+          if (item.system?.price && Number(item.system.price.per) > 1) {
+            remainUpdate["system.price.per"] = 1;
+          }
+        }
+        await item.update(remainUpdate);
       }
 
       console.log(`[wow-looter] Item '${item.name}' transferido con éxito de '${source.name}' a '${target.name}'.`);
-      ui.notifications.info(`${target.name} recogió ${item.name}`);
+      if (!silent) {
+        ui.notifications.info(`${target.name} recogió ${item.name}`);
+      }
       return createdItem;
     } catch (err) {
       console.error("[wow-looter] Error durante transferItem:", err);

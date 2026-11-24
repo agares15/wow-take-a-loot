@@ -4,7 +4,15 @@ import { socketService } from "../services/socket-service.js";
 import { currencyService } from "../services/currency-service.js";
 import { merchantService } from "../services/merchant-service.js";
 import { LootSettingsApp } from "./loot-settings-app.js";
-import { protectDropdowns, enrichItemDescription } from "../utils/dom-helpers.js";
+import { ItemSettingsApp } from "./item-settings-app.js";
+import {
+  protectDropdowns,
+  enrichItemDescription,
+  isAmmunitionItem,
+  getEffectiveItemQuantity,
+  normalizeAmmunitionItemData,
+  promptAmmunitionQuantity
+} from "../utils/dom-helpers.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -73,6 +81,8 @@ export class MerchantApp extends HandlebarsApplicationMixin(ApplicationV2) {
       "edit-description": MerchantApp._onEditDescription,
       "add-roll-table": MerchantApp._onAddRollTable,
       "toggle-item-visibility": MerchantApp._onToggleItemVisibility,
+      "edit-item": MerchantApp._onEditItem,
+      "item-settings": MerchantApp._onItemSettings,
       "edit-stock": MerchantApp._onEditStock,
       "step-stock": MerchantApp._onStepStock,
       "gm-delete-item": MerchantApp._onGmDeleteItem,
@@ -142,12 +152,20 @@ export class MerchantApp extends HandlebarsApplicationMixin(ApplicationV2) {
       const isHidden = Boolean(item.getFlag?.(MODULE_ID, "hidden"));
       if (!isGM && isHidden) continue; // Jugadores no ven items ocultos
 
-      const stock = Number(item.quantity ?? item.system?.quantity ?? 1);
-      const priceData = currencyService.getItemPriceData(item);
-      const unitCostCopper = Math.round(priceData.copperValue * (buyModifier / 100));
-      const selectedQty = Math.min(Math.max(1, this.buyQuantities.get(item.id) || 1), stock);
-      const totalCostCopper = unitCostCopper * selectedQty;
-      const canAfford = shopper ? currencyService.canActorAfford(shopper, totalCostCopper) : false;
+      const itemSettings = item.getFlag?.(MODULE_ID, "merchantItemSettings") || {};
+      const isInfinite = Boolean(itemSettings.infiniteQuantity);
+      const keepWhenSoldOut = Boolean(itemSettings.keepWhenSoldOut);
+      const isService = Boolean(itemSettings.isService);
+
+      const rawQty = Number(item.quantity ?? item.system?.quantity ?? 1);
+      const stock = isInfinite ? 99 : (rawQty <= 0 ? 0 : getEffectiveItemQuantity(item));
+      const isSoldOut = !isInfinite && rawQty <= 0;
+
+      if (isSoldOut && !keepWhenSoldOut && !isGM) continue;
+
+      const priceEval = currencyService.evaluateItemBuyPrice(item, buyModifier, itemSettings);
+      const selectedQty = isSoldOut ? 1 : Math.min(Math.max(1, this.buyQuantities.get(item.id) || 1), stock);
+      const canAfford = !isSoldOut && shopper ? currencyService.canActorAffordPrice(shopper, priceEval, selectedQty) : false;
       const bulk = adapter.getItemBulk(item);
       const category = adapter.getItemCategory(item);
 
@@ -157,12 +175,16 @@ export class MerchantApp extends HandlebarsApplicationMixin(ApplicationV2) {
         img: item.img || "icons/svg/item-bag.svg",
         description: await enrichItemDescription(item.system?.description?.value || item.system?.description || "", item),
         stock,
+        isInfinite,
+        isSoldOut,
+        isService,
+        isFree: priceEval.isFree,
         bulk,
         category,
         isHidden,
         selectedQty,
-        unitCostCopper,
-        formattedPrice: currencyService.formatCopperPrice(unitCostCopper),
+        unitCostCopper: priceEval.copperValue,
+        formattedPrice: priceEval.formattedPrice,
         canAfford
       });
     }
@@ -172,9 +194,17 @@ export class MerchantApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const processedSellItems = [];
 
     for (const item of rawShopperItems) {
-      const stock = Number(item.quantity ?? item.system?.quantity ?? 1);
+      const stock = getEffectiveItemQuantity(item);
+      const merchantMatch = source?.items?.find((i) => i.name === item.name && i.type === item.type);
+      const itemSettings = item.getFlag?.(MODULE_ID, "merchantItemSettings")
+        || merchantMatch?.getFlag?.(MODULE_ID, "merchantItemSettings")
+        || {};
+      const rawSellMod = itemSettings.sellPriceModifier;
+      const effectiveSellMod = (rawSellMod !== null && rawSellMod !== undefined && rawSellMod !== "")
+        ? Math.max(0, Number(rawSellMod))
+        : sellModifier;
       const priceData = currencyService.getItemPriceData(item);
-      const unitPayoutCopper = Math.round(priceData.copperValue * (sellModifier / 100));
+      const unitPayoutCopper = Math.round(priceData.copperValue * (effectiveSellMod / 100));
       const selectedQty = Math.min(Math.max(1, this.sellQuantities.get(item.id) || 1), stock);
       const bulk = adapter.getItemBulk(item);
       const category = adapter.getItemCategory(item);
@@ -443,6 +473,11 @@ export class MerchantApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 const itemData = item.toObject();
                 delete itemData._id;
                 delete itemData._stats;
+                if (isAmmunitionItem(item)) {
+                  const qty = await promptAmmunitionQuantity(item.name, 10);
+                  if (!qty) return;
+                  normalizeAmmunitionItemData(itemData, qty);
+                }
                 await merchantService.addMerchantItem(source, itemData);
                 ui.notifications.info(`${item.name} añadido a la tienda.`);
                 this.render(false);
@@ -789,6 +824,42 @@ export class MerchantApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     ui.notifications.info(`Objetos de '${table.name}' añadidos al stock.`);
     this.render(false);
+  }
+
+  static async _onEditItem(event, target) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!game.user.isGM) return;
+    const itemId = target.dataset.itemId || target.closest("[data-item-id]")?.dataset.itemId;
+    if (!itemId) return;
+
+    const source = this.targetToken?.actor || this.targetActor;
+    let item = source?.items?.get(itemId);
+    if (!item && this.activeTab === "sell") {
+      const shopper = this.lootingToken?.actor || this.lootingActor;
+      item = shopper?.items?.get(itemId);
+    }
+    if (item?.sheet) {
+      item.sheet.render(true);
+    }
+  }
+
+  static async _onItemSettings(event, target) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!game.user.isGM) return;
+
+    const itemId = target.dataset.itemId || target.closest("[data-item-id]")?.dataset.itemId;
+    const source = this.targetToken?.actor || this.targetActor;
+    const item = source?.items?.get(itemId);
+    if (!item) return;
+
+    new ItemSettingsApp({
+      item,
+      source,
+      targetToken: this.targetToken,
+      parentApp: this
+    }).render(true);
   }
 
   static async _onToggleItemVisibility(event, target) {

@@ -37,6 +37,40 @@ export class ChatAnnouncer {
   }
 
   /**
+   * Anuncia en el chat cuando un personaje deposita un item en un botín/contenedor.
+   * @param {Actor} fromActor - Personaje que deposita el objeto
+   * @param {Actor} targetActor - Contenedor o cuerpo destino
+   * @param {string} itemName - Nombre del objeto
+   * @param {string} itemImg - Imagen del objeto
+   * @param {number} quantity - Cantidad depositada
+   */
+  static async announceItemDrop(fromActor, targetActor, itemName, itemImg, quantity = 1) {
+    const qtyStr = quantity > 1 ? ` (x${quantity})` : "";
+    const itemDisplay = `${itemName}${qtyStr}`;
+    const messageText = game.i18n.format("WOW_LOOTER.Chat.DroppedItemInLoot", {
+      character: `<strong>${foundry.utils.escapeHTML(fromActor.name)}</strong>`,
+      item: `<strong>${foundry.utils.escapeHTML(itemDisplay)}</strong>`,
+      loot: `<strong>${foundry.utils.escapeHTML(targetActor.name)}</strong>`
+    });
+
+    const content = `
+      <div class="wow-looter-chat-card loot-pickup-card">
+        <div class="card-header">
+          <img src="${itemImg || 'icons/svg/item-bag.svg'}" class="item-chat-img" />
+          <div class="card-text">
+            <span class="pickup-title">${messageText}</span>
+          </div>
+        </div>
+      </div>
+    `;
+
+    return ChatMessage.create({
+      speaker: ChatMessage.getSpeaker({ actor: fromActor }),
+      content
+    });
+  }
+
+  /**
    * Anuncia en el chat la recogida de múltiples items (Loot All).
    * @param {Actor} lootingActor
    * @param {Actor} targetActor

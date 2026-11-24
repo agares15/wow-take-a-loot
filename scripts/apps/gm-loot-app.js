@@ -2,7 +2,15 @@ import { MODULE_ID } from "../constants.js";
 import { getSystemAdapter } from "../adapters/index.js";
 import { lootSessionManager } from "../services/loot-session.js";
 import { currencyService } from "../services/currency-service.js";
-import { enrichItemDescription } from "../utils/dom-helpers.js";
+import {
+  enrichItemDescription,
+  isAmmunitionItem,
+  getEffectiveItemQuantity,
+  normalizeAmmunitionItemData,
+  parseDropData,
+  resolveDroppedItem,
+  promptAmmunitionQuantity
+} from "../utils/dom-helpers.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -19,6 +27,7 @@ export class GmLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
     this.customItems = []; // Items agregados manualmente o tirados de tablas
     this.manualCurrencies = null; // Monedas modificadas manualmente si las hubiera
     this.excludedItemIds = new Set(); // Items de enemigos que el GM decidió remover individualmente
+    this.itemQuantityOverrides = new Map(); // Cantidades editadas manualmente por el GM en el Loot Pool
 
     this._initializeEnemies(options.initialEnemies || []);
     this._initializePlayers(options.initialPlayers);
@@ -40,9 +49,9 @@ export class GmLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
     actions: {
       "toggle-enemy": GmLootApp._onToggleEnemy,
       "toggle-player": GmLootApp._onTogglePlayer,
+      "edit-item": GmLootApp._onEditItem,
       "remove-item": GmLootApp._onRemoveItem,
       "add-roll-table": GmLootApp._onAddRollTable,
-      "edit-currency": GmLootApp._onEditCurrency,
       "toggle-item-desc": GmLootApp._onToggleItemDesc,
       "cancel": GmLootApp._onCancel,
       "distribute-to-players": GmLootApp._onDistributeToPlayers
@@ -162,56 +171,111 @@ export class GmLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
   async _prepareContext() {
     const adapter = getSystemAdapter();
 
-    // 1. Recopilar items de los enemigos seleccionados
-    const aggregatedItems = [];
+    // 1. Recopilar y apilar items idénticos de los enemigos seleccionados + personalizados
+    const rawEntries = [];
     for (const enemyEntry of this.enemies) {
       if (!enemyEntry.selected) continue;
       const items = currencyService.filterLootableItems(adapter.getLootableItems(enemyEntry.actor));
       for (const item of items) {
         const uniqueItemId = `${enemyEntry.id}::${item.id}`;
         if (this.excludedItemIds.has(uniqueItemId)) continue;
-        aggregatedItems.push({
+        const itemQty = getEffectiveItemQuantity(item);
+        const sysData = item.toObject();
+        if (isAmmunitionItem(sysData)) {
+          normalizeAmmunitionItemData(sysData, itemQty);
+        }
+        rawEntries.push({
           id: uniqueItemId,
           sourceItemId: item.id,
           name: item.name,
+          type: item.type,
           img: item.img,
-          quantity: Number(item.quantity ?? item.system?.quantity ?? 1),
+          quantity: itemQty,
           sourceActorId: enemyEntry.actor.id,
           sourceActorUuid: enemyEntry.actor.uuid,
           sourceName: enemyEntry.name,
           description: item.system?.description?.value || item.system?.description || "",
-          systemData: item.toObject()
+          systemData: sysData
         });
       }
     }
 
-    // Agregar items personalizados / tablas
     for (const custom of this.customItems) {
-      aggregatedItems.push(custom);
+      rawEntries.push({
+        ...custom,
+        type: custom.type || custom.systemData?.type || "loot"
+      });
     }
 
-    // Enriquecer descripciones con formato nativo del sistema
-    await Promise.all(aggregatedItems.map(async (entry) => {
-      if (entry.description) {
-        entry.description = await enrichItemDescription(entry.description);
+    // Apilar siempre items idénticos (mismo nombre y tipo)
+    const stackedMap = new Map();
+    for (const entry of rawEntries) {
+      const stackKey = `${(entry.name || "").trim().toLowerCase()}::${(entry.type || "").trim().toLowerCase()}`;
+      if (this.excludedItemIds.has(stackKey)) continue;
+
+      const existing = stackedMap.get(stackKey);
+      if (existing) {
+        existing.quantity += Math.max(1, Number(entry.quantity) || 1);
+        if (entry.sourceName && !existing._sourceNames.includes(entry.sourceName)) {
+          existing._sourceNames.push(entry.sourceName);
+          existing.sourceName = existing._sourceNames.join(", ");
+        }
+        if (entry.sourceActorId) {
+          existing.sourceChunks.push({
+            sourceActorId: entry.sourceActorId,
+            sourceActorUuid: entry.sourceActorUuid || null,
+            sourceItemId: entry.sourceItemId || entry.id,
+            quantity: Math.max(1, Number(entry.quantity) || 1)
+          });
+        }
+      } else {
+        const qty = Math.max(1, Number(entry.quantity) || 1);
+        stackedMap.set(stackKey, {
+          ...entry,
+          id: stackKey,
+          quantity: qty,
+          _sourceNames: entry.sourceName ? [entry.sourceName] : [],
+          sourceChunks: entry.sourceActorId
+            ? [{
+                sourceActorId: entry.sourceActorId,
+                sourceActorUuid: entry.sourceActorUuid || null,
+                sourceItemId: entry.sourceItemId || entry.id,
+                quantity: qty
+              }]
+            : []
+        });
       }
+    }
+
+    const aggregatedItems = Array.from(stackedMap.values()).map((entry) => {
+      if (this.itemQuantityOverrides.has(entry.id)) {
+        entry.quantity = Math.max(1, Number(this.itemQuantityOverrides.get(entry.id)) || 1);
+      }
+      return entry;
+    });
+
+    // Enriquecer descripciones con formato nativo del sistema y etiquetas (tags)
+    await Promise.all(aggregatedItems.map(async (entry) => {
+      entry.description = await enrichItemDescription(entry.description || "", entry.systemData || entry);
     }));
 
-    // 2. Recopilar monedas
+    // 2. Recopilar monedas (sumar primero las de los enemigos seleccionados y luego aplicar ediciones manuales del GM)
     const currencyTotals = {};
     for (const key of adapter.getCurrencyKeys()) {
       currencyTotals[key] = 0;
     }
 
+    for (const enemyEntry of this.enemies) {
+      if (!enemyEntry.selected) continue;
+      const cur = currencyService.getActorCurrencies(enemyEntry.actor);
+      for (const [k, v] of Object.entries(cur)) {
+        currencyTotals[k] = (currencyTotals[k] || 0) + Number(v || 0);
+      }
+    }
+
     if (this.manualCurrencies) {
-      Object.assign(currencyTotals, this.manualCurrencies);
-    } else {
-      for (const enemyEntry of this.enemies) {
-        if (!enemyEntry.selected) continue;
-        const cur = currencyService.getActorCurrencies(enemyEntry.actor);
-        for (const [k, v] of Object.entries(cur)) {
-          currencyTotals[k] = (currencyTotals[k] || 0) + Number(v || 0);
-        }
+      for (const [k, v] of Object.entries(this.manualCurrencies)) {
+        currencyTotals[k] = Math.max(0, Number(v || 0));
       }
     }
 
@@ -264,6 +328,17 @@ export class GmLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
     };
   }
 
+  async _preRender(context, options) {
+    await super._preRender?.(context, options);
+    const html = this.element;
+    if (!html) return;
+    this._savedScroll = {
+      loot: html.querySelector(".loot-items-list-container")?.scrollTop ?? 0,
+      enemies: html.querySelector(".enemies-checklist")?.scrollTop ?? 0,
+      players: html.querySelector(".players-checklist")?.scrollTop ?? 0
+    };
+  }
+
   /**
    * Configura eventos de arrastre (drag & drop) una vez renderizado.
    */
@@ -271,6 +346,18 @@ export class GmLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
     super._onRender(context, options);
 
     const html = this.element;
+    if (this._savedScroll) {
+      const restore = () => {
+        const lootEl = html.querySelector(".loot-items-list-container");
+        const enemiesEl = html.querySelector(".enemies-checklist");
+        const playersEl = html.querySelector(".players-checklist");
+        if (lootEl && this._savedScroll.loot) lootEl.scrollTop = this._savedScroll.loot;
+        if (enemiesEl && this._savedScroll.enemies) enemiesEl.scrollTop = this._savedScroll.enemies;
+        if (playersEl && this._savedScroll.players) playersEl.scrollTop = this._savedScroll.players;
+      };
+      restore();
+      requestAnimationFrame(restore);
+    }
     const dropTargets = html.querySelectorAll(".drop-target");
 
     for (const target of dropTargets) {
@@ -285,6 +372,39 @@ export class GmLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
         GmLootApp._onAddRollTable.call(this, ev, addTableBtn);
       });
     }
+
+    // Escuchar cambios en vivo en los inputs de monedas del GM
+    html.querySelectorAll("input.coin-input[data-currency]").forEach((input) => {
+      const updateCoin = (ev) => {
+        GmLootApp._onEditCurrency.call(this, ev, ev.target);
+        const distributeBtn = html.querySelector("[data-action='distribute-to-players']");
+        if (distributeBtn) {
+          const anyMoney = Array.from(html.querySelectorAll("input.coin-input[data-currency]"))
+            .some((el) => Number(el.value || 0) > 0);
+          const hasItems = this.enemies.some((e) => e.selected) || this.customItems.length > 0;
+          const hasEligible = this.players.some((p) => p.selected);
+          distributeBtn.disabled = !((hasItems || anyMoney) && hasEligible);
+        }
+      };
+      input.addEventListener("input", updateCoin);
+      input.addEventListener("change", updateCoin);
+    });
+
+    // Edición de cantidades de items en el Loot Pool (solo GM)
+    html.querySelectorAll("input.gm-pool-qty-input[data-item-id]").forEach((input) => {
+      input.addEventListener("pointerdown", (ev) => ev.stopPropagation());
+      input.addEventListener("mousedown", (ev) => ev.stopPropagation());
+      input.addEventListener("click", (ev) => ev.stopPropagation());
+      const syncItemQty = (ev) => {
+        const itemId = ev.target.dataset.itemId;
+        if (!itemId) return;
+        const val = Math.max(1, Math.floor(Number(ev.target.value || 1)));
+        ev.target.value = String(val);
+        this.itemQuantityOverrides.set(itemId, val);
+      };
+      input.addEventListener("input", syncItemQty);
+      input.addEventListener("change", syncItemQty);
+    });
 
     // Ajustar alturas dinámicas de Defeated Enemies y Player Characters
     if (this._sideColObserver) {
@@ -366,13 +486,7 @@ export class GmLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
   async _onDrop(event) {
     event.preventDefault();
     event.stopPropagation();
-    let data;
-    try {
-      data = JSON.parse(event.dataTransfer.getData("text/plain"));
-    } catch {
-      return;
-    }
-
+    const data = parseDropData(event);
     if (!data || !data.type) return;
 
     const dropType = event.currentTarget?.dataset?.dropType;
@@ -455,18 +569,32 @@ export class GmLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
    * Procesa el arrastre de un Item individual.
    */
   async _handleItemDrop(data) {
-    const item = await fromUuid(data.uuid);
+    const item = await resolveDroppedItem(data);
     if (!item) return;
+
+    let qty = getEffectiveItemQuantity(item);
+    if (isAmmunitionItem(item)) {
+      qty = await promptAmmunitionQuantity(item.name, 10);
+      if (!qty) return;
+    }
+
+    const sysData = item.toObject();
+    sysData.system = sysData.system || {};
+    sysData.system.quantity = qty;
+    if (isAmmunitionItem(sysData)) {
+      normalizeAmmunitionItemData(sysData, qty);
+    }
 
     this.customItems.push({
       id: foundry.utils.randomID(),
       name: item.name,
+      type: item.type,
       img: item.img,
-      quantity: item.system?.quantity ?? 1,
+      quantity: qty,
       sourceActorId: null,
       sourceName: game.i18n.localize("WOW_LOOTER.GM.CustomAdded"),
       description: item.system?.description?.value || item.system?.description || "",
-      systemData: item.toObject()
+      systemData: sysData
     });
     this.render(true);
   }
@@ -670,6 +798,43 @@ export class GmLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   }
 
+  static async _onEditItem(event, target) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!game.user.isGM) return;
+    const itemId = target.dataset.itemId || target.closest("[data-item-id]")?.dataset.itemId;
+    if (!itemId) return;
+
+    const context = await this._prepareContext();
+    const entry = context.items.find((i) => i.id === itemId);
+    if (!entry) return;
+
+    const chunk = entry.sourceChunks?.[0];
+    if (chunk) {
+      let actor = null;
+      if (chunk.sourceActorUuid) {
+        const doc = await fromUuid(chunk.sourceActorUuid).catch(() => null);
+        actor = doc?.actor || doc;
+      }
+      if (!actor && chunk.sourceActorId) {
+        actor = game.actors.get(chunk.sourceActorId);
+      }
+      const itemDoc = actor?.items?.get(chunk.sourceItemId);
+      if (itemDoc?.sheet) {
+        itemDoc.sheet.render(true);
+        return;
+      }
+    }
+
+    if (entry.uuid) {
+      const doc = await fromUuid(entry.uuid).catch(() => null);
+      if (doc?.sheet) {
+        doc.sheet.render(true);
+        return;
+      }
+    }
+  }
+
   static _onRemoveItem(event, target) {
     const itemId = target.dataset.itemId;
     // Comprobar si es un item personalizado
@@ -724,6 +889,36 @@ export class GmLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   static async _onDistributeToPlayers(event, target) {
+    // Sincronizar monedas y checkboxes directamente desde el DOM antes de construir la sesión
+    if (this.element) {
+      this.element.querySelectorAll("input.coin-input[data-currency]").forEach((input) => {
+        const key = input.dataset.currency;
+        if (!key) return;
+        const val = Math.max(0, Number(input.value || 0));
+        if (!this.manualCurrencies) this.manualCurrencies = {};
+        this.manualCurrencies[key] = val;
+      });
+
+      this.element.querySelectorAll("input.gm-pool-qty-input[data-item-id]").forEach((input) => {
+        const itemId = input.dataset.itemId;
+        if (itemId) {
+          this.itemQuantityOverrides.set(itemId, Math.max(1, Math.floor(Number(input.value || 1))));
+        }
+      });
+
+      this.element.querySelectorAll("input[data-action='toggle-player']").forEach((cb) => {
+        const charId = cb.dataset.actorId;
+        const player = this.players.find((p) => p.characterId === charId);
+        if (player) player.selected = Boolean(cb.checked);
+      });
+
+      this.element.querySelectorAll("input[data-action='toggle-enemy']").forEach((cb) => {
+        const actorId = cb.dataset.actorId;
+        const enemy = this.enemies.find((e) => e.id === actorId);
+        if (enemy) enemy.selected = Boolean(cb.checked);
+      });
+    }
+
     const context = await this._prepareContext();
     const eligible = this.players.filter((p) => p.selected);
 

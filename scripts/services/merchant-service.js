@@ -438,45 +438,94 @@ export class MerchantService {
       return false;
     }
 
-    const availableQty = Number(item.quantity ?? item.system?.quantity ?? 1);
-    const toBuy = Math.min(quantity, availableQty);
+    const itemSettings = item.getFlag?.(MODULE_ID, "merchantItemSettings") || {};
+    const isInfinite = Boolean(itemSettings.infiniteQuantity);
+    const keepWhenSoldOut = Boolean(itemSettings.keepWhenSoldOut);
+    const isService = Boolean(itemSettings.isService);
+
+    const availableQty = isInfinite ? Infinity : Number(item.quantity ?? item.system?.quantity ?? 1);
+    const toBuy = isInfinite ? Math.max(1, quantity) : Math.min(quantity, availableQty);
     if (toBuy <= 0) {
       ui.notifications.warn(game.i18n.localize("WOW_LOOTER.Merchant.OutOfStock"));
       return false;
     }
 
     const lootSettings = merchantActor.getFlag(MODULE_ID, "lootSettings") || {};
-    const buyModifier = Number(lootSettings.buyPriceModifier !== undefined ? lootSettings.buyPriceModifier : 100) / 100;
-    const basePriceData = currencyService.getItemPriceData(item);
-    const unitCostCopper = Math.round(basePriceData.copperValue * buyModifier);
-    const totalCostCopper = unitCostCopper * toBuy;
+    const buyModifier = Number(lootSettings.buyPriceModifier !== undefined ? lootSettings.buyPriceModifier : 100);
+    const priceEval = currencyService.evaluateItemBuyPrice(item, buyModifier, itemSettings);
 
     // Verificar si el comprador puede pagar
-    if (!currencyService.canActorAfford(buyerActor, totalCostCopper)) {
+    if (!currencyService.canActorAffordPrice(buyerActor, priceEval, toBuy)) {
       ui.notifications.warn(game.i18n.localize("WOW_LOOTER.Merchant.CannotAfford"));
       return false;
     }
 
     const adapter = getSystemAdapter();
 
-    // 1. Deducir fondos del comprador
-    await currencyService.deductCopperFromActor(buyerActor, totalCostCopper);
-
-    // 2. Si el comerciante NO tiene fondos ilimitados, añadir las monedas al mercader
-    if (lootSettings.infiniteFunds === false) {
-      await currencyService.addCopperToActor(merchantActor, totalCostCopper);
+    // 1. Deducir fondos del comprador y pagar al mercader si aplica
+    const totalCopper = priceEval.copperValue * toBuy;
+    if (!priceEval.isFree && totalCopper > 0) {
+      await currencyService.deductCopperFromActor(buyerActor, totalCopper);
+      if (lootSettings.infiniteFunds === false) {
+        await currencyService.addCopperToActor(merchantActor, totalCopper);
+      }
+    }
+    if (!priceEval.isFree) {
+      for (const [cKey, cAmt] of Object.entries(priceEval.customAmounts || {})) {
+        const totalCustom = cAmt * toBuy;
+        if (totalCustom <= 0) continue;
+        await currencyService.deductCurrency(buyerActor, cKey, totalCustom);
+        if (lootSettings.infiniteFunds === false) {
+          await currencyService.giveCurrency(merchantActor, cKey, totalCustom);
+        }
+      }
     }
 
-    // 3. Transferir el item del mercader al comprador
+    // 2. Transferir o entregar el item (si es servicio, no se añade al inventario del comprador)
     const itemName = item.name;
     const itemImg = item.img;
-    await adapter.transferItem(merchantActor, buyerActor, itemId, toBuy);
+    if (isService) {
+      if (!isInfinite) {
+        const nextQty = Math.max(0, availableQty - toBuy);
+        if (nextQty <= 0 && !keepWhenSoldOut) {
+          await item.delete();
+        } else {
+          await item.update({ "system.quantity": nextQty });
+        }
+      }
+    } else if (isInfinite || (keepWhenSoldOut && availableQty <= toBuy)) {
+      // Clonar y apilar en el comprador sin eliminar el documento del mercader
+      const existingOnBuyer = buyerActor.items.find((i) => i.name === item.name && i.type === item.type);
+      if (existingOnBuyer) {
+        const curQty = Number(existingOnBuyer.quantity ?? existingOnBuyer.system?.quantity ?? 1);
+        await existingOnBuyer.update({ "system.quantity": curQty + toBuy });
+      } else {
+        const itemData = item.toObject();
+        delete itemData._id;
+        delete itemData._stats;
+        itemData.system = itemData.system || {};
+        itemData.system.quantity = toBuy;
+        if (itemData.system.containerId) itemData.system.containerId = null;
+        await buyerActor.createEmbeddedDocuments("Item", [itemData]);
+      }
+      if (!isInfinite) {
+        await item.update({ "system.quantity": 0 });
+      }
+    } else {
+      await adapter.transferItem(merchantActor, buyerActor, itemId, toBuy);
+    }
 
-    // 4. Sonido de compra
+    // 3. Sonido de compra
     foundry.audio.AudioHelper.play({ src: "sounds/coins.wav", volume: 0.8 }, true);
 
-    // 5. Anuncio en Chat
-    const formattedCost = currencyService.formatCopperPrice(totalCostCopper);
+    // 4. Anuncio en Chat
+    const formattedCost = priceEval.isFree
+      ? game.i18n.localize("WOW_LOOTER.Merchant.Free")
+      : (priceEval.isCustomPrice
+        ? Object.entries({ ...(totalCopper > 0 ? { _copper: totalCopper } : {}), ...(priceEval.customAmounts || {}) })
+            .map(([k, v]) => k === "_copper" ? currencyService.formatCopperPrice(v) : `${v * toBuy} ${currencyService.getCurrencyMetadata(k).label}`)
+            .join(", ")
+        : currencyService.formatCopperPrice(totalCopper));
     await ChatAnnouncer.announceMerchantPurchase(buyerActor, merchantActor, itemName, itemImg, toBuy, formattedCost);
 
     ui.notifications.info(game.i18n.format("WOW_LOOTER.Merchant.BoughtNotice", {
@@ -510,7 +559,15 @@ export class MerchantService {
     if (toSell <= 0) return false;
 
     const lootSettings = merchantActor.getFlag(MODULE_ID, "lootSettings") || {};
-    const sellModifier = Number(lootSettings.sellPriceModifier !== undefined ? lootSettings.sellPriceModifier : 50) / 100;
+    const merchantMatch = merchantActor.items.find((i) => i.name === item.name && i.type === item.type);
+    const itemSettings = item.getFlag?.(MODULE_ID, "merchantItemSettings")
+      || merchantMatch?.getFlag?.(MODULE_ID, "merchantItemSettings")
+      || {};
+    const rawSellMod = itemSettings.sellPriceModifier;
+    const effectiveSellMod = (rawSellMod !== null && rawSellMod !== undefined && rawSellMod !== "")
+      ? Math.max(0, Number(rawSellMod))
+      : Number(lootSettings.sellPriceModifier !== undefined ? lootSettings.sellPriceModifier : 50);
+    const sellModifier = effectiveSellMod / 100;
     const basePriceData = currencyService.getItemPriceData(item);
     const unitPayoutCopper = Math.round(basePriceData.copperValue * sellModifier);
     const totalPayoutCopper = unitPayoutCopper * toSell;

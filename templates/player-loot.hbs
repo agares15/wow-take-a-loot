@@ -121,7 +121,14 @@
             <li class="player-loot-card" data-item-id="{{this.id}}">
               <div class="player-loot-card-main">
                 <div class="item-visual" data-action="toggle-item-desc">
-                  <img src="{{this.img}}" alt="{{this.name}}" class="item-icon" />
+                  <span class="item-img-wrap">
+                    <img src="{{this.img}}" alt="{{this.name}}" class="item-icon" />
+                    {{#if ../../isGM}}
+                    <button type="button" class="btn-img-edit-overlay" data-action="edit-item" data-item-id="{{this.id}}" title="{{localize 'WOW_LOOTER.Common.EditItem'}}">
+                      <i class="fas fa-pen-to-square"></i>
+                    </button>
+                    {{/if}}
+                  </span>
                   <div class="item-name-group">
                     <span class="item-name">{{this.name}}</span>
                     {{#if (gt this.quantity 1)}}
@@ -171,7 +178,11 @@
 
                   <!-- Campo de Cantidad si quantity > 1 -->
                   {{#if (gt this.quantity 1)}}
-                    <input type="number" class="player-claim-qty-input num-box" min="1" max="{{this.quantity}}" value="{{this.myClaimQty}}" title="{{localize 'WOW_LOOTER.Manual.QuantityToTake'}}" />
+                    <div class="qty-stepper">
+                      <button type="button" class="btn-qty-step" data-qty-step="-1" title="-1 (Shift: -5, Alt: -10)"><i class="fas fa-minus"></i></button>
+                      <input type="number" class="player-claim-qty-input num-box" min="1" max="{{this.quantity}}" value="{{this.myClaimQty}}" title="{{localize 'WOW_LOOTER.Manual.QuantityToTake'}}" />
+                      <button type="button" class="btn-qty-step" data-qty-step="1" title="+1 (Shift: +5, Alt: +10)"><i class="fas fa-plus"></i></button>
+                    </div>
                   {{/if}}
 
                   <!-- Botón Split (Solo GM cuando quantity > 1) -->

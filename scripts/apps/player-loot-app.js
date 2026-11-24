@@ -3,7 +3,7 @@ import { getSystemAdapter } from "../adapters/index.js";
 import { socketService } from "../services/socket-service.js";
 import { lootSessionManager } from "../services/loot-session.js";
 import { currencyService } from "../services/currency-service.js";
-import { protectDropdowns, enrichItemDescription } from "../utils/dom-helpers.js";
+import { protectDropdowns, enrichItemDescription, bindQuantitySteppers } from "../utils/dom-helpers.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -16,6 +16,7 @@ export class PlayerLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
   constructor(options = {}) {
     super(options);
     this.selectedCharacterId = options.selectedCharacterId || null;
+    this.desiredQuantities = new Map();
   }
 
   static DEFAULT_OPTIONS = {
@@ -38,7 +39,8 @@ export class PlayerLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
       "set-currency-custom": PlayerLootApp._onSetCurrencyCustom,
       "toggle-my-ready": PlayerLootApp._onToggleMyReady,
       "gm-force-resolve": PlayerLootApp._onGmForceResolve,
-      "split-item": PlayerLootApp._onSplitItem
+      "split-item": PlayerLootApp._onSplitItem,
+      "edit-item": PlayerLootApp._onEditItem
     }
   };
 
@@ -252,10 +254,16 @@ export class PlayerLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
       }
 
       const category = adapter.getItemCategory(item.systemData || item) || "Equipment";
+      const qtyKey = `${this.selectedCharacterId || "default"}:${item.id}`;
+      const pendingQty = this.desiredQuantities.get(qtyKey);
+      const effectiveMyClaimQty = Math.min(
+        itemQty,
+        Math.max(1, Number(myClaim?.quantity ?? pendingQty ?? 1) || 1)
+      );
 
       return {
         ...item,
-        description: await enrichItemDescription(item.description || ""),
+        description: await enrichItemDescription(item.description || "", item),
         isClaimedByMe,
         isSingleClaim,
         isContested,
@@ -263,7 +271,7 @@ export class PlayerLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
         isNotEnough,
         isMyClaimOverAllocated,
         canSplit: game.user.isGM && itemQty > 1,
-        myClaimQty: myClaim?.quantity || 1,
+        myClaimQty: effectiveMyClaimQty,
         category,
         claims
       };
@@ -312,6 +320,15 @@ export class PlayerLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
     };
   }
 
+  async _preRender(context, options) {
+    await super._preRender?.(context, options);
+    const html = this.element;
+    if (!html) return;
+    this._savedScroll = {
+      loot: html.querySelector(".player-loot-list-container")?.scrollTop ?? 0
+    };
+  }
+
   /**
    * Conecta listeners directos del DOM para máxima robustez ante clics de jugadores.
    */
@@ -319,6 +336,16 @@ export class PlayerLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
     super._onRender(context, options);
     const html = this.element;
     protectDropdowns(html);
+    bindQuantitySteppers(html);
+
+    if (this._savedScroll) {
+      const restore = () => {
+        const lootEl = html.querySelector(".player-loot-list-container");
+        if (lootEl && this._savedScroll.loot) lootEl.scrollTop = this._savedScroll.loot;
+      };
+      restore();
+      requestAnimationFrame(restore);
+    }
 
     // Selector de personaje para lootear (evento change)
     const looterSelect = html.querySelector(".looting-as-select, .looter-select");
@@ -408,9 +435,9 @@ export class PlayerLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
       });
     }
 
-    // Actualizar cantidad reclamada en vivo si el jugador ya había seleccionado el item
+    // Actualizar cantidad deseada/reclamada en vivo
     html.querySelectorAll(".player-claim-qty-input").forEach((input) => {
-      input.addEventListener("change", (ev) => {
+      const syncQty = (ev) => {
         const session = lootSessionManager.session;
         if (!session) return;
         const card = ev.target.closest(".player-loot-card");
@@ -418,16 +445,32 @@ export class PlayerLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const item = session.items?.find((i) => i.id === itemId);
         const charId = this.selectedCharacterId || PlayerLootApp.getMyParticipatingCharacter(session)?.characterId;
         if (!item || !charId) return;
+
+        const qty = Math.min(Math.max(1, Number(item.quantity) || 1), Math.max(1, parseInt(ev.target.value) || 1));
+        ev.target.value = String(qty);
+        this.desiredQuantities.set(`${charId}:${itemId}`, qty);
+
         const alreadyClaimed = item.claims?.some((c) => c.characterId === charId);
         if (!alreadyClaimed) return;
 
-        const qty = Math.min(Math.max(1, Number(item.quantity) || 1), Math.max(1, parseInt(ev.target.value) || 1));
         socketService.emit(SOCKET_EVENTS.CLAIM_ITEM, {
           itemId,
           characterId: charId,
           quantity: qty,
           updateOnly: true
         });
+      };
+      input.addEventListener("change", syncQty);
+      input.addEventListener("input", (ev) => {
+        const session = lootSessionManager.session;
+        if (!session) return;
+        const card = ev.target.closest(".player-loot-card");
+        const itemId = card?.dataset.itemId;
+        const item = session.items?.find((i) => i.id === itemId);
+        const charId = this.selectedCharacterId || PlayerLootApp.getMyParticipatingCharacter(session)?.characterId;
+        if (!item || !charId) return;
+        const qty = Math.min(Math.max(1, Number(item.quantity) || 1), Math.max(1, parseInt(ev.target.value) || 1));
+        this.desiredQuantities.set(`${charId}:${itemId}`, qty);
       });
     });
   }
@@ -555,6 +598,35 @@ export class PlayerLootApp extends HandlebarsApplicationMixin(ApplicationV2) {
   static async _onGmForceResolve(event, target) {
     if (!game.user.isGM) return;
     await lootSessionManager.resolveAndDistribute();
+  }
+
+  static async _onEditItem(event, target) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!game.user.isGM) return;
+
+    const session = lootSessionManager.session;
+    const itemId = target.dataset.itemId || target.closest(".player-loot-card")?.dataset.itemId;
+    const item = session?.items?.find((i) => i.id === itemId);
+    if (!item) return;
+
+    const chunk = item.sourceChunks?.[0];
+    const actorUuid = chunk?.sourceActorUuid || item.sourceActorUuid;
+    const actorId = chunk?.sourceActorId || item.sourceActorId;
+    const sourceItemId = chunk?.sourceItemId || item.sourceItemId || item.id;
+
+    let actor = null;
+    if (actorUuid) {
+      const doc = await fromUuid(actorUuid).catch(() => null);
+      actor = doc?.actor || doc;
+    }
+    if (!actor && actorId) {
+      actor = game.actors.get(actorId);
+    }
+    const itemDoc = actor?.items?.get(sourceItemId);
+    if (itemDoc?.sheet) {
+      itemDoc.sheet.render(true);
+    }
   }
 
   static async _onSplitItem(event, target) {

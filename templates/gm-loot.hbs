@@ -78,7 +78,7 @@
           {{#each currencies}}
           <div class="currency-pill {{this.key}}">
             <img src="{{this.img}}" alt="{{this.label}}" class="currency-coin-icon" />
-            <input type="number" class="coin-input num-box" data-action="edit-currency" data-currency="{{this.key}}" value="{{this.value}}" min="0" />
+            <input type="number" class="coin-input num-box" data-currency="{{this.key}}" value="{{this.value}}" min="0" />
             <span class="currency-denom-label">{{this.label}}</span>
           </div>
           {{/each}}
@@ -112,13 +112,19 @@
                 {{#each this.items}}
                 <li class="loot-item-entry pool-item-card" data-item-id="{{this.id}}" {{#if this.sourceName}}title="{{localize 'WOW_LOOTER.GM.FromSource' source=this.sourceName}}"{{/if}}>
                   <div class="item-main-row">
-                    <img src="{{this.img}}" alt="{{this.name}}" class="item-img" data-action="toggle-item-desc" />
+                    <span class="item-img-wrap">
+                      <img src="{{this.img}}" alt="{{this.name}}" class="item-img" data-action="toggle-item-desc" />
+                      <button type="button" class="btn-img-edit-overlay" data-action="edit-item" data-item-id="{{this.id}}" title="{{localize 'WOW_LOOTER.Common.EditItem'}}">
+                        <i class="fas fa-pen-to-square"></i>
+                      </button>
+                    </span>
                     <div class="item-details" data-action="toggle-item-desc">
                       <div class="name-desc-toggle">
                         <span class="item-name">{{this.name}}</span>
-                        {{#if (gt this.quantity 1)}}
-                          <span class="item-qty-badge">x{{this.quantity}}</span>
-                        {{/if}}
+                        <span class="gm-qty-edit-wrap">
+                          <span class="gm-qty-prefix">x</span>
+                          <input type="number" class="gm-pool-qty-input num-box" min="1" value="{{this.quantity}}" data-item-id="{{this.id}}" />
+                        </span>
                         <i class="fas fa-chevron-down toggle-desc-icon"></i>
                       </div>
                     </div>

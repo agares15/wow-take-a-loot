@@ -7,6 +7,7 @@ import { ChatAnnouncer } from "../services/chat-announcer.js";
 import { currencyService } from "../services/currency-service.js";
 import { merchantService } from "../services/merchant-service.js";
 import { applyContainerTexture, preloadContainerTextures } from "../utils/container-helpers.js";
+import { getEffectiveItemQuantity } from "../utils/dom-helpers.js";
 
 function _isTokenMarkedLootable(token) {
   const tokenFlag = token?.document?.getFlag(MODULE_ID, FLAGS.IS_LOOTABLE);
@@ -172,6 +173,7 @@ export function registerTokenHud() {
 
       // 3. Procesar la acción autoritativamente
       try {
+        let dropNotification = null;
         if (action === "take-item") {
           const item = targetActor.items.get(data.itemId);
           const itemName = item?.name || "Objeto";
@@ -179,15 +181,43 @@ export function registerTokenHud() {
           const qty = data.quantity || 1;
           await adapter.transferItem(targetActor, lootingActor, data.itemId, qty);
           await ChatAnnouncer.announceItemPickup(lootingActor, targetActor, itemName, itemImg, qty);
+        } else if (action === "deposit-item") {
+          let fromActor = null;
+          if (data.sourceActorUuid) {
+            const doc = await fromUuid(data.sourceActorUuid).catch(() => null);
+            fromActor = doc?.actor || doc;
+          }
+          if (!fromActor && data.sourceActorId) {
+            fromActor = game.actors.get(data.sourceActorId);
+          }
+          if (!fromActor) fromActor = lootingActor;
+          if (fromActor && fromActor.id !== targetActor.id) {
+            const item = fromActor.items?.get(data.itemId);
+            const itemName = item?.name || "Objeto";
+            const itemImg = item?.img || "icons/svg/item-bag.svg";
+            const qty = Math.max(1, Number(data.quantity || 1));
+            const transferred = await adapter.transferItem(fromActor, targetActor, data.itemId, qty, { silent: true });
+            if (transferred) {
+              const liveTargetToken = targetTokenId ? (canvas.tokens?.get(targetTokenId) || canvas.tokens?.placeables.find((t) => t.id === targetTokenId)) : null;
+              const lootName = liveTargetToken?.name || targetActor.name;
+              dropNotification = game.i18n.format("WOW_LOOTER.Chat.DroppedItemInLoot", {
+                character: fromActor.name,
+                item: qty > 1 ? `${itemName} (x${qty})` : itemName,
+                loot: lootName
+              });
+              ui.notifications.info(dropNotification);
+              await ChatAnnouncer.announceItemDrop(fromActor, targetActor, itemName, itemImg, qty);
+            }
+          }
         } else if (action === "loot-all-items") {
           const items = adapter.getLootableItems(targetActor);
           const itemsList = items.map((i) => ({
             name: i.name,
             img: i.img,
-            quantity: Number(i.quantity ?? i.system?.quantity ?? 1)
+            quantity: getEffectiveItemQuantity(i)
           }));
           for (const item of items) {
-            await adapter.transferItem(targetActor, lootingActor, item.id, item.system?.quantity || 1);
+            await adapter.transferItem(targetActor, lootingActor, item.id, getEffectiveItemQuantity(item));
           }
           if (itemsList.length > 0) {
             await ChatAnnouncer.announceAllItemsPickup(lootingActor, targetActor, itemsList);
@@ -255,7 +285,8 @@ export function registerTokenHud() {
         // 5. Notificar a todos los clientes para que actualicen sus ventanas abiertas
         socketService.emit(SOCKET_EVENTS.MANUAL_LOOT_UPDATED, {
           targetActorId: targetActor.id,
-          targetTokenId
+          targetTokenId,
+          dropNotification
         });
       } catch (err) {
         console.error("[wow-looter] Error en GM al procesar MANUAL_LOOT_EXECUTE:", err);
